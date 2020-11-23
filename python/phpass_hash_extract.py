@@ -1,18 +1,16 @@
-import re, sys
-
-file = sys.argv[1]
+import re, sys, pathlib
 
 try:
-    with open(file, 'r') as sql:
-        data = sql.readlines()
-        match = re.findall("\$P\$.{31}", str(data))
-        print(f'{len(match)} Hashes grepped')
+    file = pathlib.Path(sys.argv[1])
+    out_file = pathlib.Path(sys.argv[2])
+except Exception as e:
+    print(f"usage: {sys.argv[0]} input_file output_file")
+    sys.exit(0)
+try:
+    match = re.findall("\$P\$.{31}", str(file.open('r').readlines()))
+    print(f'{len(match)} Hashes grepped')
+    for phpass in match:
+        out_file.open("a").write(phpass + '\n')
 except Exception as e:
     print(e)
     sys.exit(1)
-try:
-    with open(sys.argv[2], 'w') as result_file:
-        for phpass in match:
-            result_file.write(phpass + '\n')
-except Exception as e:
-    print(e)

