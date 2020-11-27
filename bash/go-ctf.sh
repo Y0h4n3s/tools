@@ -14,6 +14,6 @@ while getopts ":h:t:v:i:" o; do
       t) makedirs TryHackMe $OPTARG;;
       v) makedirs Vulnhub $OPTARG;;
       i) echo "Sudo Password:"
-         sudo nmap -sSVC -p 0-65535 -v -oA $basedir/nmap/all-ports -n $OPTARG >/dev/null
+         sudo nmap -sSVC -p 0-65535 -v -oA $basedir/nmap/all-ports $OPTARG
   esac
 done
