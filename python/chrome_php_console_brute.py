@@ -47,7 +47,8 @@ with open(PASS_FILE, 'r') as passwords:
                 if result:
                     print(line + ":", result)
                     break
-            except requests.ConnectionError:
+            except requests.ConnectionError as e:
                 i = i + 1
+                print(e, "Retrying...")
                 continue
             break
