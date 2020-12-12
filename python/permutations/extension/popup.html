@@ -7,11 +7,19 @@
   <title>Permutations</title>
 </head>
 <body>
-  <form method="post">
-    <textarea name="links-area" id="links" cols="120" rows="20" class="links"></textarea>
+  <form method="post" class="container">
+    <div class="current-div">
+      <label for="current" class="copy-current">Url: </label>
+      <input name="current" class="current-link input">  
+    </div>
+    <textarea name="links-area" id="links" cols="100" rows="20" class="links"></textarea>
+    <div class="btns">
     <button type="submit" class="submit-links-btn btn">Go</button>
     <button type="submit" class="next-btn btn">Next</button>
-  </form>
+    <button type="submit" class="prev-btn btn">Previous</button>
+  
+    </div>
+    </form>
   <script type="module" src="js/popup.js"></script>
   
 </body>
