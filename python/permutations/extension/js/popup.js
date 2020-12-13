@@ -58,7 +58,7 @@ function goToNext(e=null,advance=true){
   localStorage.setItem("currentLink", advance ? link : prevLink)
   chrome.tabs.query({index: parseInt(localStorage.getItem("tabIndex")), currentWindow: true}, function(tab) {    
     if(tab == undefined || tab[0] == undefined) {
-      chrome.tabs.create({active: true, url: link, index: 0})
+      chrome.tabs.create({active: true, url: link, index: parseInt(localStorage.getItem("tabIndex"))})
       //chrome.tabs.query({active: true}, function(tab) {})
     } else
     
