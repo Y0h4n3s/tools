@@ -2,7 +2,7 @@
 
 file=$1;
 blob=`cat $1`
-trimmedBlob=`echo "$blob" | sed -e 's/\<\\<class\>//g' | sed -e 's/\<enum\>//g' | sed -e 's/\<type\>//g' | tr -d '<>,'`
+trimmedBlob=`echo "$blob" | sed "s/\s'/~>/g"` 
 classes=($trimmedBlob)
 
 index=0

@@ -41,7 +41,7 @@ data = json.loads(args.data)
 @app.route("/")
 def test():
 
-    print(data)
+    #print(data)
     t = url_serializer.dumps(dict(data))
     print(t)
     #session["measurements"] = b64encode(b'\160\162\151\156\164\50\47\167\157\162\153\163\47\51\73')
@@ -51,3 +51,4 @@ def test():
 
 print("curl http://localhost:12345/")
 app.run("localhost", 12345)
+

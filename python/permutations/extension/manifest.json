@@ -8,9 +8,34 @@
     "default_popup": "popup.html"
   },
 
+  "commands": {
+    "toggle-next": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+X"
+      },
+      "description": "Goto Next Link"
+    },
+    "toggle-prev": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+Z"
+      },
+      "description": "Goto Previous Link"
+    },
+    "toggle-clear": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+C"
+      },
+      "description": "Clear"
+    }
+  },
+  "background": {
+    "scripts":["js/background.js"]
+  },
+
   "permissions": [
     "tabs",
     "background",
+    "commands", 
     "activeTab",
     "storage"
   ]
