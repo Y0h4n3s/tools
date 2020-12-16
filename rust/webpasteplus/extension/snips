@@ -1,0 +1,31 @@
+Google URLs
+[...document.querySelectorAll('div.r>a:first-child')].map(n=>n.href)
+document.location=document.querySelectorAll('a#pnnext')[0].href;
+
+GitHub Results
+[...document.querySelectorAll('#code_search_results a.text-bold')].map(n=>n.href)
+document.location=document.querySelectorAll('a.next_page')[0].href;
+
+Yandex
+[...document.querySelectorAll('div.organic__path a.link[href]')].map(el => el.href)
+document.location=document.querySelector('a.pager__item_kind_next').href
+
+Gist Results
+[...document.querySelectorAll('div.gist-snippet-meta span > a:nth-child(2)')].map(n=>n.href)
+document.location=document.querySelectorAll('a.next_page')[0].href;
+
+[...document.querySelectorAll('.rc>div>a')].map(n=>n.href)
+document.location=document.querySelectorAll('a#pnnext')[0].href
+
+var temp = [];
+var array = [...document.querySelectorAll("#resultset>.result>.results-metadata>.detail")].map(n => n.innerText.match(/(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]/g) ? n.innerText.match(/(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)+[a-z0-9][a-z0-9-]{0,61}[a-z0-9]/g) : []);
+for (i=0; i < array.length; i++) {
+    if (array[i].length > 0) {
+        for (j = 0; j < array[i].length; j++){temp.push(array[i][j]);}}}
+temp
+
+document.location=document.querySelector("nav>ul>.hover>a").href
+
+
+[...document.querySelectorAll(".g>.rc>div>a")].map(n => n.href.match(/https?:\/\/([^\/]+)\/?/)[1])
+document.location=document.querySelectorAll('a#pnnext')[0].href
