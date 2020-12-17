@@ -25,12 +25,13 @@ let repeatTimes
 let current
 let tabId = null
 function proceed(e, auto=true){
+    localStorage.removeItem("tabId")
     if (e.target.innerText == "Stop"){
         chrome.runtime.sendMessage({theSignal: true})
         return
     }
-    timeout = parseInt(prompt("Interval Between Requests(In Seconds)"))
-    repeatTimes = parseInt(prompt("How Many Repititions"))
+    timeout = 3//parseInt(prompt("Interval Between Requests(In Seconds)"))
+    repeatTimes = 30000//parseInt(prompt("How Many Repititions"))
     current = e.target
     if (!timeout || ! repeatTimes) return
     chrome.runtime.sendMessage(

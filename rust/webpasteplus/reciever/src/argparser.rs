@@ -27,7 +27,7 @@ impl Arguments {
                     Arguments::get_arg_value(provided, String::from("-l:--parse-level"));
                 
                 println!(
-                    "addres found: {}, level found: {}",
+                    "address found: {}, level found: {}",
                     address.unwrap(),
                     level.unwrap()
                 );

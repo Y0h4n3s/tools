@@ -2,6 +2,8 @@ use std::sync::mpsc;
 use std::sync::Arc;
 use std::sync::Mutex;
 use std::thread;
+use std::net::TcpStream;
+use std::io::Read;
 
 pub struct ThreadPool {
   threads: Vec<Worker>,

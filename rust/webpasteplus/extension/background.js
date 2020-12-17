@@ -23,7 +23,11 @@ chrome.runtime.onMessage.addListener(async function (message, sender, sendRespon
     let onSuccess = message.onsuccess
     for (let i = 0; i < repeatTimes; i++) {
         if(canceled)break
+        try {
         await next(code, onSuccess, timeout, repeatTimes).then(v => { })
+        } catch(error) {
+            continue
+        }
     }
     localStorage.removeItem("tabId")
     return
@@ -53,7 +57,7 @@ function next(code, success, timeout, reps) {
 
                     function (results) {
                         console.log('results', results)
-
+                
                         fetch(server, {
                             method: 'POST',
                             mode: 'cors',
@@ -71,7 +75,7 @@ function next(code, success, timeout, reps) {
                                     resolver(r)
                                 })
                         }).catch((err) => {
-                            alert(err)
+                            //alert(err)
                         })
                     }
                 )

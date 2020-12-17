@@ -1,2 +1,6 @@
 .idea/
 rust/webpasteplus/reciever/target
+out/
+python/build/
+.vscode/
+*vscode*
