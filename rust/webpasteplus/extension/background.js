@@ -56,17 +56,18 @@ function next(code, success, timeout, reps) {
                     { code: snippet },
 
                     function (results) {
-                        console.log('results', results)
-                
-                        fetch(server, {
-                            method: 'POST',
-                            mode: 'cors',
-                            headers: { 'Content-Type': 'application/json' },
-                            body: JSON.stringify({
-                                "token": token,
-                                "lines": results[0]
-                            })
-                        }).then(() => {
+                    console.log("results:", results[0])
+                        var dat = JSON.stringify({
+                                                "$$Spplitt$$": {
+                                                    "token": token,
+                                                    "everything_else": results[0]
+                                                }
+                                            })
+                        var xhr = new XMLHttpRequest();
+                        xhr.open("POST",server,true)
+                        xhr.setRequestHeader("Content-Type", "application/json")
+                        xhr.onreadystatechange = function(){
+                            if (xhr.readyState = XMLHttpRequest.DONE) {
                             chrome.tabs.executeScript(
                                 parseInt(localStorage.getItem("tabId")),
                                 { code: postSnippet },
@@ -74,14 +75,15 @@ function next(code, success, timeout, reps) {
                                     let r = await sleep(timeout * 1000)
                                     resolver(r)
                                 })
-                        }).catch((err) => {
-                            //alert(err)
+                            }
+                        }
+                        xhr.send(dat)
+                        console.log(dat)
+
                         })
-                    }
-                )
+                    })
             })
         })
-    })
 }
 
 async function sleep(millis) {

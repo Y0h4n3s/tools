@@ -45,6 +45,7 @@ impl Worker {
     fn new(id: usize, reciever: Arc<Mutex<mpsc::Receiver<Job>>>) -> Worker {
         let work = thread::spawn(move || loop {
             let job = reciever.lock().unwrap().recv().unwrap();
+            println!("executing in {}", id);
             job();
         });
 

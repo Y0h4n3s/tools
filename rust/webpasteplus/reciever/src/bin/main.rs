@@ -4,6 +4,7 @@ use reciever::server::*;
 
 fn main() {
     //let (tx: Sender, rx: Receiver) = mpsc::channel();
+
     let argstoo = Arguments::new();
     for arg in argstoo.get_args().iter() {
         if let Arg::Server(is_me, ops) = arg {

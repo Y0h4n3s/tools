@@ -1,17 +1,19 @@
 use std::collections::HashMap;
 use std::fs::OpenOptions;
 use std::io::Write;
+use std::hash::Hash;
+use crate::separator;
 
-pub fn paste_to_file(data: HashMap<String, Vec<String>>) -> bool {
+pub fn paste_to_file(data: HashMap<String, HashMap<String, HashMap<String, Vec<String>>>>) -> bool {
     let mut save_check = false;
-    let file_name: &String = &data.get("filename").unwrap()[0];
-    for i in data.keys() {
-        let mut file = OpenOptions::new().append(true).create(true)
-            .open(file_name).unwrap();
-        println!("{} saving", file_name);
-        save_check = file.write(to_file_data(&data.get("data").unwrap()).as_bytes()).is_ok();
-
+    let wordlists = data.get("wordlists").unwrap().to_owned();
+    let hostnames = data.get("hostnames").unwrap().get("hostnames").unwrap().get("hostnames").unwrap().to_owned();
+    for (path, data) in wordlists {
+        println!("{}", path);
+        let mut file = OpenOptions::new().create(true).write(true).append(false).open(data.get("hostname")[0]).unwrap();
+        file.write(to_file_data(data.get("exact").unwrap()).as_bytes()).unwrap();
     }
+
 
     save_check
 }

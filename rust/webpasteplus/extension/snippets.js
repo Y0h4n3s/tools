@@ -1,3 +1,5 @@
+
+//TODO add more protocols to the link extraction regexes.
 [
     {
         "name": "Google URLs",
