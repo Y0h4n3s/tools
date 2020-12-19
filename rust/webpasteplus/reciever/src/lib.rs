@@ -1,7 +1,9 @@
-pub mod separator;
-pub mod paster;
+mod separator;
+mod paster;
 pub mod argparser;
 pub mod server;
+mod dbwriter;
+
 use std::sync::mpsc;
 use std::sync::Arc;
 use std::sync::Mutex;

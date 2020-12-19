@@ -1,18 +1,14 @@
 extern crate json;
 
-use std::net::{TcpListener, Shutdown};
-use std::io::{BufReader, BufRead, Read};
-use std::io::Write;
-use std::fs;
-use actix_web::{get, post,web, App, HttpResponse, HttpServer, Responder};
-use crate::ThreadPool;
 use crate::separator::Parser;
+use crate::argparser::ServerOptions;
 use crate::paster;
+use crate::dbwriter;
+use actix_web::{get, post,web, App, HttpResponse, HttpServer, Responder};
 use actix_web::http::{StatusCode, Method};
+use actix_web::web::Json;
 use std::collections::HashMap;
 use serde::{Deserialize, Serialize};
-use actix_web::web::Json;
-use crate::argparser::ServerOptions;
 
 pub struct Server {
   ops: ServerOptions,

@@ -1,1 +1,1 @@
--- This file should undo anything in `up.sql`
+DROP TABLE IF EXISTS port_protocol, root_domains, sub_domains, endpoints, endpoint, params CASCADE
