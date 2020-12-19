@@ -12,11 +12,7 @@ fn main() {
                 continue
             }
              println!("its a sever {}", is_me.unwrap());
-             println!("with a value {}", ops.get_address());
-             let address = ops.get_address();
-             let level = ops.get_parse_level();
-             let threads = &ops.get_threads();
-             launch_server(address, level, *threads);
+             launch_server(ServerOptions::get_from(ops));
         }
         if let Arg::Interactive(is_me) = arg {
             if !is_me.unwrap() {
@@ -27,10 +23,9 @@ fn main() {
     
 }
 
-fn launch_server(address: &String, _parse_level: usize, threads: usize) -> bool {
-    println!("Listening on {}", address);
-    let pool: ThreadPool = ThreadPool::new(threads);
-    let server = Server::new(address, pool);
-    server.start();
+fn launch_server( ops: ServerOptions) -> bool {
+    //let pool: ThreadPool = ThreadPool::new(threads);
+    let server = Server::new(ops);
+    Server::start(&server);
     true
 }

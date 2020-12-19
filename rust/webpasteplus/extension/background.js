@@ -58,10 +58,10 @@ function next(code, success, timeout, reps) {
                     function (results) {
                     console.log("results:", results[0])
                         var dat = JSON.stringify({
-                                                "$$Spplitt$$": {
+
                                                     "token": token,
                                                     "everything_else": results[0]
-                                                }
+
                                             })
                         var xhr = new XMLHttpRequest();
                         xhr.open("POST",server,true)

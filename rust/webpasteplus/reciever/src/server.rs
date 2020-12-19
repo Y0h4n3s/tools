@@ -4,66 +4,58 @@ use std::net::{TcpListener, Shutdown};
 use std::io::{BufReader, BufRead, Read};
 use std::io::Write;
 use std::fs;
+use actix_web::{get, post,web, App, HttpResponse, HttpServer, Responder};
 use crate::ThreadPool;
 use crate::separator::Parser;
 use crate::paster;
-
+use actix_web::http::{StatusCode, Method};
+use std::collections::HashMap;
+use serde::{Deserialize, Serialize};
+use actix_web::web::Json;
+use crate::argparser::ServerOptions;
 
 pub struct Server {
-  address: String,
-  pool: ThreadPool,
+  ops: ServerOptions,
+
 }
 
 
 impl Server {
-  pub fn new(address: &str, pool: ThreadPool) -> Server {
-    let address = String::from(address);
-    
-    Server {address, pool}
+  pub fn new(ops: ServerOptions) -> Server {
+    Server { ops }
   }
 
-  pub fn start(&self) -> &Server {
-    const BUFFER_SIZE: usize = 65536;
-    //TODO use traits to simplify data transfer
-    //TODO figure out why data isn't read for bigger sizes
-    let listener = TcpListener::bind(&self.address).unwrap();
-    for stream in listener.incoming() {
-      &self.pool.execute(move ||{
-        let mut stream = stream.unwrap();
-        let mut received_data: Vec<u8> = vec![];
-        let peer = &mut [0u8; BUFFER_SIZE];
-        let mut reader = BufReader::new(stream);
-        loop {
-          let mut read = reader.read(peer).unwrap();
-          received_data.extend_from_slice(&peer[..read]);
-          println!("Read {}", read);
-          if read < BUFFER_SIZE {
-            println!("No buffer");
-            break
-          }
-        }
-        println!("Recieved: {}", String::from_utf8_lossy(&*received_data));
+pub fn start(&self) -> std::io::Result<()> {
+  HttpServer::new(|| {
+    App::new()
+        .route("/", web::method(Method::OPTIONS).to(Server::options))
+        .route("/", web::post().to(Server::data_post))
+  })
+      .bind(self.ops.get_address())?
+      .run()
+}
 
-        let parsed_data = Parser::new(String::from_utf8(received_data.clone()).unwrap().to_string(), 3, true).parse_request();
-        if parsed_data.is_some() {
-          paster::paste_to_file(parsed_data.unwrap());
-        }
-        let twoohfour = fs::read_to_string("src/responses/204.txt").unwrap();
-        println!("Sending: {}", twoohfour);
-       stream = reader.into_inner();
-        stream.write(twoohfour.as_bytes()).unwrap();
-        stream.flush();
-        stream.shutdown(Shutdown::Both).unwrap();
-        received_data.clear();
-        return;
-      });
-    }
-    /* for stream in listener.incoming() {
-        let mut buffer = [0; 1020];
-        let mut stream = stream.unwrap();
-        stream.read(&mut buffer).unwrap();
-        println!("{}", String::from_utf8_lossy(&buffer));
-    } */
-    self
+  fn data_post(info: Json<Data>) -> impl Responder {
+    println!("{:?}", info);
+    let parser = Parser::new(info.into_inner().everything_else, 3, true);
+    let parsed_data = parser.parse_request();
+    let pasted_to_file = paster::paste_to_file(parsed_data.unwrap());
+    HttpResponse::build(StatusCode::OK)
+        .with_header("Access-Control-Allow-Origin", "chrome-extension://ojddniephhbohamkfcejdoomfdcfbjig")
+        .with_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+        .with_header("Access-Control-Allow-Headers", "Content-Type")
   }
+  fn options() -> impl Responder {
+    HttpResponse::build(StatusCode::OK)
+        .with_header("Access-Control-Allow-Origin", "chrome-extension://ojddniephhbohamkfcejdoomfdcfbjig")
+        .with_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+        .with_header("Access-Control-Allow-Headers", "Content-Type")
+  }
+
+}
+
+#[derive(Serialize, Deserialize, Debug)]
+struct Data {
+  token: String,
+  everything_else: Vec<HashMap<String,Vec<String>>>,
 }

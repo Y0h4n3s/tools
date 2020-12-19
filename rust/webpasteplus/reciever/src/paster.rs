@@ -10,10 +10,9 @@ pub fn paste_to_file(data: HashMap<String, HashMap<String, HashMap<String, Vec<S
     let hostnames = data.get("hostnames").unwrap().get("hostnames").unwrap().get("hostnames").unwrap().to_owned();
     for (path, data) in wordlists {
         println!("{}", path);
-        let mut file = OpenOptions::new().create(true).write(true).append(false).open(data.get("hostname")[0]).unwrap();
+        let mut file = OpenOptions::new().create(true).write(true).append(false).open(data.get("hostname").unwrap()[0].to_owned()).unwrap();
         file.write(to_file_data(data.get("exact").unwrap()).as_bytes()).unwrap();
     }
-
 
     save_check
 }

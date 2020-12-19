@@ -88,6 +88,13 @@ impl ServerOptions {
         }
     }
 
+    pub fn get_from(ops: &ServerOptions) -> ServerOptions{
+        let address = ops.address.clone();
+        let parse_level = ops.parse_level.clone();
+        let threads = ops.threads.clone();
+        ServerOptions {address, parse_level, threads}
+    }
+
     fn set_address(&mut self, new_address: Option<&String>) -> &mut ServerOptions {
         if !new_address.is_none() {
             self.address = new_address.unwrap().to_string();

@@ -14,13 +14,13 @@ use self::regex::Captures;
 
 //TODO implement tag source for extractd links
 pub struct Parser {
-    data: String,
+    data: Vec<HashMap<String,Vec<String>>>,
     level: usize,
     do_domain: bool,
 }
 
 impl Parser {
-    pub fn new(data: String, level: usize, do_domain: bool) -> Parser {
+    pub fn new(data: Vec<HashMap<String,Vec<String>>>, level: usize, do_domain: bool) -> Parser {
         Parser {
             data,
             level,
@@ -28,19 +28,10 @@ impl Parser {
         }
     }
     pub fn parse_request(&self) -> Option<HashMap<String, HashMap<String, HashMap<String,Vec<String>>>>> {
-        let split_headers: Vec<&str> = self.data.rsplit("{\"$$Spplitt$$\":").collect();
-        let headers: Vec<&str> = split_headers[split_headers.len() - 1].split("\n").collect();
-        if headers[0].find("POST").is_none() {
-            return None;
-        }
+
         let mut store_data: HashMap<String, HashMap<String, HashMap<String,Vec<String>>>> = HashMap::new();
-        let request_json: Data = serde_json::from_str(
-            split_headers[0]
-                .trim_end_matches("\u{0}")
-                .trim()
-                .strip_suffix("}")
-                .unwrap_or_else(||"nope")).unwrap();
-        let the_useful_data = request_json.everything_else[0][1].get("full_links").unwrap().to_owned();
+        let request_json = self.data.clone();
+        let the_useful_data = request_json[1].get("full_links").unwrap().to_owned();
         let mut hrefs: String = "".to_string();
         for href in the_useful_data.iter() {
             //println!("{}", href);
@@ -55,24 +46,10 @@ impl Parser {
 
         store_data.insert("hostnames".to_string(), hostnames_entry);
 
-        let link_dirs = request_json.everything_else[0][2].clone();
+        let link_dirs = request_json[2].clone();
         let wordlists = get_wordlist_all(link_dirs);
         store_data.insert("wordlists".to_string(), wordlists);
-        //println!("Response Json: {:#?}", hrefs);
 
-        let mut vals: HashMap<String, HashMap<String,HashMap<String, Vec<String>>>> = HashMap::new();
-        let mut words: HashMap<String, HashMap<String, Vec<String>>> = HashMap::new();
-        let mut words_: HashMap<String, Vec<String>> = HashMap::new();
-
-        words_.insert("all_data".to_string(),vec![String::from(&self.data)]);
-        words.insert("all_data".to_string(),words_);
-
-        let mut filename_: HashMap<String, HashMap<String, Vec<String>>> = HashMap::new();
-        let mut filename: HashMap<String,Vec<String>> = HashMap::new();
-        filename.insert("filename".to_string(),vec!["test.txt".to_ascii_lowercase()]);
-        filename_.insert("filename".to_string(),filename);
-        store_data.insert("filename".to_string(), filename_);
-        vals.insert("data".to_string(), words);
         Option::from(store_data)
     }
 }
@@ -151,8 +128,3 @@ fn get_root_hostnames(hrefs: &String, root_domain: String) -> HashMap<String, Ve
     valids
 }
 
-#[derive(Serialize, Deserialize, Debug)]
-struct Data {
-    token: String,
-    everything_else: Vec<Vec<HashMap<String,Vec<String>>>>,
-}
