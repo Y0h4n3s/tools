@@ -1,19 +1,28 @@
-mod separator;
-mod paster;
-pub mod argparser;
-pub mod server;
-mod dbwriter;
+#![recursion_limit = "256"]
 
-use std::sync::mpsc;
+
+#[macro_use]
+extern crate diesel;
+
 use std::sync::Arc;
+use std::sync::mpsc;
 use std::sync::Mutex;
 use std::thread;
+
+pub mod separator;
+pub mod paster;
+pub mod argparser;
+pub mod dbwriter;
+pub mod schema;
+mod dbmodels;
 
 pub struct ThreadPool {
     threads: Vec<Worker>,
     sender: mpsc::Sender<Job>,
 }
+
 type Job = Box<dyn FnOnce() + Send + 'static>;
+
 impl ThreadPool {
     pub fn new(size: usize) -> ThreadPool {
         assert!(size > 0);
@@ -29,8 +38,8 @@ impl ThreadPool {
     }
 
     pub fn execute<F>(&self, f: F)
-    where
-        F: FnOnce() + Send + 'static,
+        where
+            F: FnOnce() + Send + 'static,
     {
         let job = Box::new(f);
 

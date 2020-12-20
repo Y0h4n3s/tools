@@ -41,7 +41,7 @@ function next(code, success, timeout, reps) {
                 return
             }
 
-            console.log('config', data.config)
+            //console.log('config', data.config)
 
             let server = "http://" + data.config.server || 'localhost'
             let token = data.config.token || 'notoken'
@@ -56,7 +56,7 @@ function next(code, success, timeout, reps) {
                     { code: snippet },
 
                     function (results) {
-                    console.log("results:", results[0])
+                    //console.log("results:", results[0])
                         var dat = JSON.stringify({
 
                                                     "token": token,
@@ -78,7 +78,7 @@ function next(code, success, timeout, reps) {
                             }
                         }
                         xhr.send(dat)
-                        console.log(dat)
+                        //console.log(dat)
 
                         })
                     })

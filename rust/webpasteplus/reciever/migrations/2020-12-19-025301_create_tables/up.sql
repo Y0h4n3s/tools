@@ -1,75 +1,54 @@
 
-CREATE TABLE IF NOT EXISTS port_protocol (
-    pid INT PRIMARY KEY,
-    port INT NOT NULL CHECK (port >= 1 AND port <=65535),
-    protocol VARCHAR(16) NOT NULL
-    );
-
 
 CREATE TABLE IF NOT EXISTS root_domains (
-    rid INT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     hostname VARCHAR(256) UNIQUE,
-    ip VARCHAR(32),
-    vhost BOOL,
+    ip VARCHAR(32) DEFAULT '',
+    vhost BOOL DEFAULT FALSE,
     date_added TIMESTAMP NOT NULL DEFAULT NOW(),
-    notes VARCHAR(1024),
-    pid INT,
-        FOREIGN KEY(pid)
-            REFERENCES port_protocol(pid)
-            ON DELETE CASCADE
+    notes VARCHAR(1024) DEFAULT '',
+    protocol VARCHAR(32) DEFAULT 'HTTP'
     );
     
     
 CREATE TABLE IF NOT EXISTS sub_domains (
-    sid INT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     hostname VARCHAR(256) UNIQUE,
-    ip VARCHAR(32),
-    vhost BOOL,
+    ip VARCHAR(32) DEFAULT '',
+    vhost BOOL DEFAULT FALSE,
     date_added TIMESTAMP NOT NULL DEFAULT NOW(),
-    notes VARCHAR(1024),
-    pid INT,
+    notes VARCHAR(1024) DEFAULT '',
+    protocol VARCHAR(32) DEFAULT 'HTTP',
     rid INT,
-    CONSTRAINT pid
-        FOREIGN KEY(pid)
-            REFERENCES port_protocol(pid)
-            ON DELETE CASCADE,
     CONSTRAINT rid
         FOREIGN KEY(rid)
-            REFERENCES root_domains(rid)
+            REFERENCES root_domains(id)
             ON DELETE CASCADE
     );
     
 CREATE TABLE IF NOT EXISTS endpoints (
-    eid INT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     date_added TIMESTAMP NOT NULL DEFAULT NOW(),
     list_type CHAR NOT NULL DEFAULT 'd',
     rid INT,
     sid INT,
     CONSTRAINT rid
         FOREIGN KEY(rid)
-            REFERENCES root_domains(rid)
+            REFERENCES root_domains(id)
             ON DELETE CASCADE,
     CONSTRAINT sid
         FOREIGN KEY(sid)
-            REFERENCES sub_domains(sid)
+            REFERENCES sub_domains(id)
             ON DELETE CASCADE
     );
 
 CREATE TABLE IF NOT EXISTS endpoint (
-    epid INT PRIMARY KEY,
+    id SERIAL PRIMARY KEY,
     value VARCHAR(128),
+    params VARCHAR(512),
     eid INT,
     CONSTRAINT eid
         FOREIGN KEY(eid)
-            REFERENCES endpoints(eid)
+            REFERENCES endpoints(id)
 );
 
-CREATE TABLE IF NOT EXISTS params (
-    pmid int PRIMARY KEY,
-    type VARCHAR(32),
-    parameter_name VARCHAR(64),
-    epid INT,
-    CONSTRAINT epid
-        FOREIGN KEY(epid)
-            REFERENCES endpoint(epid)
-)
