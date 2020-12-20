@@ -30,7 +30,7 @@ function proceed(e, auto=true){
         chrome.runtime.sendMessage({theSignal: true})
         return
     }
-    timeout = 3//parseInt(prompt("Interval Between Requests(In Seconds)"))
+    timeout = 7//parseInt(prompt("Interval Between Requests(In Seconds)"))
     repeatTimes = 30000//parseInt(prompt("How Many Repititions"))
     current = e.target
     if (!timeout || ! repeatTimes) return

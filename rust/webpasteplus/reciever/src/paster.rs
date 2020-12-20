@@ -9,13 +9,13 @@ pub fn paste_to_file(
     let save_check = false;
     let wordlists = data.get("wordlists").unwrap().to_owned();
     //let hostnames = data.get("hostnames").unwrap().get("hostnames").unwrap().get("hostnames").unwrap().to_owned();
-    for (path, data) in wordlists {
+    for (_path, data) in wordlists {
         //println!("{}", path);
         let mut file = OpenOptions::new()
             .create(true)
             .write(true)
             .append(false)
-            .open(format!("{}/{}", file_path, data.get("hostname").unwrap()[0].to_owned()))
+            .open(format!("{}/{}", file_path, data.get("hostname_links").unwrap()[0].to_owned()))
             .unwrap();
         file.write(to_file_data(data.get("exact").unwrap()).as_bytes()).unwrap();
     }

@@ -62,7 +62,7 @@ impl Arguments {
         -> Option<String> {
         let mut result = None;
         let keys = arg_keys.split(":");
-        let mut just_flags = vec!["-nf", "--don't-save-to-file"];
+        let just_flags = vec!["-nf", "--don't-save-to-file"];
         for key in keys {
             //println!("Key {}", key);
             for arg in provided {

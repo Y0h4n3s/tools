@@ -2,27 +2,21 @@ extern crate diesel;
 
 use std::collections::HashMap;
 use std::ops::Deref;
-use std::process::exit;
 use std::sync::Mutex;
 
-use actix_cors::Cors;
 use actix_web::*;
-use actix_web::{App, HttpResponse, HttpServer, middleware, Responder, web};
-use actix_web::http::{Method, StatusCode};
+use actix_web::{App, HttpResponse, HttpServer, Responder, web};
+use actix_web::http::{StatusCode};
 use actix_web::web::Json;
-use diesel::{ExpressionMethods, insert_into, PgConnection, RunQueryDsl};
+use diesel::{PgConnection};
 use diesel::r2d2::{self, ConnectionManager, Pool};
-use juniper::futures;
-use juniper::futures::io;
 use serde::{Deserialize, Serialize};
 
-use reciever::{paster, schema};
+use reciever::{paster};
 use reciever::argparser::*;
 use reciever::argparser::ServerOptions;
 use reciever::dbwriter;
 use reciever::dbwriter::DbWriter;
-use reciever::schema::*;
-use reciever::schema::root_domains::*;
 use reciever::separator::Parser;
 
 type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
@@ -31,18 +25,18 @@ type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 #[actix_web::main]
 async fn main() -> juniper::futures::io::Result<()> {
     //let (tx: Sender, rx: Receiver) = mpsc::channel();
-    let mut argstoo = Arguments::new();
+    let argstoo = Arguments::new();
     let args = argstoo.get_args();
     let mut ops = ServerOptions::new();
     for arg in args {
         match arg {
-            Arg::Server(is_me, ops1) => {
+            Arg::Server(_is_me, ops1) => {
                 ops = ServerOptions::get_from(ops1);
             }
             _ => {}
         }
     }
-    let mut data =
+    let data =
         web::Data::new(Mutex::new(ServerOptions::get_from(&ops)));
     let mut db_writer = DbWriter::new();
     let mut pool: Option<Pool<ConnectionManager<PgConnection>>> = None;
@@ -77,7 +71,7 @@ async fn data_post(pool: web::Data<DbPool>,
     //get the database connection grom the event pool
     let conn =
         pool.get().expect("Couldn't Get A Database Connection From The Pool");
-    //println!("{:?} ", data.deref().save_location().as_ref().unwrap());
+    println!("{:?} ", data.deref().no_file());
 
     //parse the request from the browser into a usable format
     let root_domain = data.root_domain();
@@ -96,11 +90,11 @@ async fn data_post(pool: web::Data<DbPool>,
     if data.deref().db_url().is_some() {
         web::block(move || {
             //println!("db writer is called");
-            dbwriter::DbWriter::insert_raw(&db_data.unwrap().clone(), &conn)
+            dbwriter::DbWriter::insert_raw(db_data.unwrap().clone(), &conn)
         })
             .await
             .map_err(|e| {
-                //eprintln!("{:?}", e);
+                eprintln!("{:?}", e);
                 HttpResponse::InternalServerError().finish()
             })?;
     }
@@ -138,12 +132,6 @@ async fn options() -> impl Responder {
         .with_header("Access-Control-Allow-Headers", "Content-Type")
 }
 
-
-#[deprecated]
-async fn launch_server(ops: ServerOptions) {
-    //let pool: ThreadPool = ThreadPool::new(threads);
-    // println!("in launch sequece");
-}
 
 #[derive(Serialize, Deserialize, Debug)]
 struct Data {

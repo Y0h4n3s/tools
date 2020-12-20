@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS root_domains, sub_domains, endpoints, endpoint CASCADE
+DROP TABLE IF EXISTS root_domains, sub_domains, endpointss, endpoints, end_points, end_point CASCADE

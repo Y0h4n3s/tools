@@ -1,54 +1,33 @@
 
-
-CREATE TABLE IF NOT EXISTS root_domains (
-    id SERIAL PRIMARY KEY,
-    hostname VARCHAR(256) UNIQUE,
-    ip VARCHAR(32) DEFAULT '',
-    vhost BOOL DEFAULT FALSE,
-    date_added TIMESTAMP NOT NULL DEFAULT NOW(),
-    notes VARCHAR(1024) DEFAULT '',
-    protocol VARCHAR(32) DEFAULT 'HTTP'
-    );
-    
-    
 CREATE TABLE IF NOT EXISTS sub_domains (
     id SERIAL PRIMARY KEY,
-    hostname VARCHAR(256) UNIQUE,
-    ip VARCHAR(32) DEFAULT '',
+    hostname TEXT UNIQUE,
+    is_root BOOL DEFAULT FALSE,
+    ip TEXT DEFAULT '',
     vhost BOOL DEFAULT FALSE,
     date_added TIMESTAMP NOT NULL DEFAULT NOW(),
-    notes VARCHAR(1024) DEFAULT '',
-    protocol VARCHAR(32) DEFAULT 'HTTP',
-    rid INT,
-    CONSTRAINT rid
-        FOREIGN KEY(rid)
-            REFERENCES root_domains(id)
-            ON DELETE CASCADE
-    );
+    notes TEXT DEFAULT '',
+    protocol TEXT DEFAULT 'HTTP'
+);
     
-CREATE TABLE IF NOT EXISTS endpoints (
+CREATE TABLE IF NOT EXISTS end_points (
     id SERIAL PRIMARY KEY,
     date_added TIMESTAMP NOT NULL DEFAULT NOW(),
     list_type CHAR NOT NULL DEFAULT 'd',
-    rid INT,
-    sid INT,
-    CONSTRAINT rid
-        FOREIGN KEY(rid)
-            REFERENCES root_domains(id)
-            ON DELETE CASCADE,
+    sid TEXT,
     CONSTRAINT sid
         FOREIGN KEY(sid)
-            REFERENCES sub_domains(id)
+            REFERENCES sub_domains(hostname)
             ON DELETE CASCADE
     );
 
-CREATE TABLE IF NOT EXISTS endpoint (
+CREATE TABLE IF NOT EXISTS end_point (
     id SERIAL PRIMARY KEY,
-    value VARCHAR(128),
-    params VARCHAR(512),
+    value TEXT,
+    params TEXT,
     eid INT,
     CONSTRAINT eid
         FOREIGN KEY(eid)
-            REFERENCES endpoints(id)
+            REFERENCES end_points(id)
 );
 

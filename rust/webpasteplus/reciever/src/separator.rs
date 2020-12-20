@@ -1,9 +1,8 @@
 extern crate regex;
 
 
+use crate::dbmodels::SubDomain;
 use std::collections::HashMap;
-
-use juniper::sa::_core::hash::Hash;
 
 //TODO implement tag source for extractd links
 pub struct Parser {
@@ -27,49 +26,26 @@ impl Parser {
         let mut store_data: HashMap<String, HashMap<String, HashMap<String, Vec<String>>>> =
             HashMap::new();
         let request_json = self.data.clone();
-        let the_useful_data = request_json[1].get("full_links").unwrap().to_owned();
+        let the_useful_data = request_json[2].clone();
         //TODO implement choice filtering by hostname
         println!("{}", self.root_domain);
-        let hostnames: HashMap<String, HashMap<String, Vec<String>>> =
-            get_root_hostnames(&the_useful_data, self.root_domain.clone());
-        let mut hostnames_entry: HashMap<String, HashMap<String, Vec<String>>> =
-            one_love(hostnames.clone(), self.root_domain.clone());
+        let hostnames: HashMap<String, HashMap<String, HashMap<String, Vec<String>>>> =
+           get_root_hostnames(the_useful_data.clone(), self.root_domain.clone());
+        //let hostnames_entry: HashMap<String, HashMap<String, Vec<String>>> =
+        //    one_love(hostnames.clone(), self.root_domain.clone());
 
-        store_data.insert("hostnames".to_string(), hostnames_entry);
+
 
         let link_dirs = request_json[2].clone();
-        let wordlists = get_wordlist_all(link_dirs);
-        store_data.insert("wordlists".to_string(), wordlists);
+        //let wordlists = get_wordlist_all(link_dirs);
 
-        Option::from(store_data)
+        Option::from(hostnames)
     }
 }
 
-fn one_love(domain_hrefs: HashMap<String, HashMap<String, Vec<String>>>, root: String)
-            -> HashMap<String, HashMap<String, Vec<String>>> {
-    let mut from_root: HashMap<String, HashMap<String, Vec<String>>> = HashMap::new();
-    let starts_with_re = regex::Regex::new(&format!("^{}", root)).unwrap();
-    let mut subs: HashMap<String, Vec<String>> = HashMap::new();
-    subs.insert(root.clone(), Vec::new());
-    for (hostname, href) in domain_hrefs.get("valids").unwrap() {
-        if starts_with_re.is_match(&hostname) {
-            //println!("re matches: {} {:?}",hostname, href);
-            let mut other = subs[hostname].clone();
-            (*subs.entry(hostname.clone()).or_insert(Vec::new())).append(&mut other);
-        } else {
-            println!("re doesn't matches: {} {:?}", hostname, href);
-            subs.insert(hostname.clone(), href.clone());
-        }
-    }
-    from_root.insert(root.clone(), subs.clone());
-    for (hostname, href) in from_root.clone() {
-        for (hostname, mut hrefs) in href.to_owned() {
-            hrefs.sort_unstable();
-            hrefs.dedup();
-            // println!("{} : {:?}", hostname, hrefs);
-        }
-    }
-    from_root
+fn one_love(domain_hrefs: HashMap<String, HashMap<String, HashMap<String, Vec<String>>>>, root: String)
+             {
+
 }
 
 fn get_wordlist_all(hrefs: HashMap<String, Vec<String>>)
@@ -116,42 +92,35 @@ fn get_hostname(href: &String) -> String {
     hostname
 }
 
-fn get_hostnames(hrefs: &Vec<String>)
-                 -> HashMap<String, Vec<String>> {
+fn get_hostnames(hrefs: HashMap<String,Vec<String>>)
+                 -> HashMap<String,HashMap<String, Vec<String>>> {
     let matcher = regex::Regex::new(r".?(?:https?:)?//([\w\-.]+).?").unwrap();
-    let mut hostnames: HashMap<String, Vec<String>> = HashMap::new();
-    for href in hrefs {
-        for cap in matcher.captures_iter(href) {
-            //println!("{:?}", &cap[1]);
-            let mut hostname = &cap[1];
-            if hostnames.contains_key(hostname) {
-                //println!("already exists: {:?}", hostname);
-                let mut my_hrefs = hostnames[hostname].clone();
-                my_hrefs.push(href.clone());
-                (*hostnames.entry(hostname.parse().unwrap())
-                    .or_insert(Vec::new())).append(&mut my_hrefs);
-            } else {
-                let mut my_hrefs = Vec::new();
-                my_hrefs.push(href.clone());
-                hostnames.insert(hostname.to_string(), my_hrefs);
-            }
+    let mut host_href_dirs: HashMap<String, HashMap<String, Vec<String>>> = HashMap::new();
+    for (mut href, dirs)  in hrefs.to_owned() {
+        if href.starts_with("//") {
+            href = format!("http{}", href);
         }
+                    //println!("{:?}", &cap[1]);
+            let hostname = get_hostname(&href);
+            let mut href_dirs: HashMap<String, Vec<String>> = HashMap::new();
+            href_dirs.insert(href.clone(), dirs.to_owned());
+            host_href_dirs.insert(hostname.parse().unwrap(), href_dirs);
+
     }
-    hostnames
+    host_href_dirs
 }
 
-fn get_root_hostnames(hrefs: &Vec<String>, root_domain: String)
-                      -> HashMap<String, HashMap<String, Vec<String>>> {
+fn get_root_hostnames(hrefs: HashMap<String, Vec<String>>, root_domain: String)
+                      -> HashMap<String, HashMap<String, HashMap<String, Vec<String>>>> {
     let link_hostnames = get_hostnames(hrefs).clone();
     //println!("theud: {:?}", link_hostnames);
 
-    let re = format!(r"({}).?", &root_domain);
-    println!("Regex: {} {}", re, root_domain);
-    let mut everything: HashMap<String, HashMap<String, Vec<String>>> = HashMap::new();
+    let re = format!(r"(^{})", &root_domain);
+    //println!("Regex: {} {}", re, root_domain);
+    let mut everything: HashMap<String, HashMap<String, HashMap<String, Vec<String>>>> = HashMap::new();
     let matcher = regex::Regex::new(&re).unwrap();
-    let mut valids: HashMap<String, Vec<String>> = HashMap::new();
-    let mut invalids: HashMap<String, Vec<String>> = HashMap::new();
-    let mut valid_hostnames: Vec<String> = Vec::new();
+    let mut valids: HashMap<String, HashMap<String, Vec<String>>> = HashMap::new();
+    let mut invalids: HashMap<String, HashMap<String, Vec<String>>> = HashMap::new();
     for (hostname, hrefs) in link_hostnames.clone() {
         //println!("{}",hostname);
         if matcher.is_match(&hostname) {
@@ -160,27 +129,19 @@ fn get_root_hostnames(hrefs: &Vec<String>, root_domain: String)
             invalids.insert(hostname, hrefs);
         }
     }
-    for (subhostname, mut subhrefs) in invalids.clone() {
-        let subregex = regex::Regex::new(&subhostname).unwrap();
-        for (hostname, mut hrefs) in valids.clone() {
-            if subregex.is_match(&hostname) {
-                hrefs.append(&mut subhrefs);
-            }
-        }
-    }
     if valids.is_empty() {
-        for (hostname, hrefs) in invalids.clone() {
-            let subregex = regex::Regex::new(&hostname);
+        for (hostname, _hrefs) in invalids.clone() {
+            let _subregex = regex::Regex::new(&hostname);
         }
     }
 
     for (hostname, mut hrefs) in valids.to_owned() {
-        hrefs.sort_unstable();
-        hrefs.dedup();
-        // println!("{} : {:?}", hostname, hrefs);
+         //println!("{} : {:?}", hostname, hrefs);
     }
+
     everything.insert("valids".to_string(), valids);
     everything.insert("invalids".to_string(), invalids);
     everything
 }
+
 

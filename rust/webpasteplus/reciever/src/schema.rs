@@ -1,4 +1,22 @@
 table! {
+    end_point (id) {
+        id -> Int4,
+        value -> Nullable<Text>,
+        params -> Nullable<Text>,
+        eid -> Nullable<Int4>,
+    }
+}
+
+table! {
+    end_points (id) {
+        id -> Int4,
+        date_added -> Timestamp,
+        list_type -> Bpchar,
+        sid -> Nullable<Text>,
+    }
+}
+
+table! {
     endpoint (id) {
         id -> Int4,
         value -> Nullable<Varchar>,
@@ -8,46 +26,23 @@ table! {
 }
 
 table! {
-    endpoints (id) {
-        id -> Int4,
-        date_added -> Timestamp,
-        list_type -> Bpchar,
-        rid -> Nullable<Int4>,
-        sid -> Nullable<Int4>,
-    }
-}
-
-table! {
-    root_domains (id) {
-        id -> Int4,
-        hostname -> Nullable<Varchar>,
-        ip -> Nullable<Varchar>,
-        vhost -> Nullable<Bool>,
-        date_added -> Timestamp,
-        notes -> Nullable<Varchar>,
-        protocol -> Nullable<Varchar>,
-    }
-}
-
-table! {
     sub_domains (id) {
         id -> Int4,
-        hostname -> Nullable<Varchar>,
-        ip -> Nullable<Varchar>,
+        hostname -> Nullable<Text>,
+        is_root -> Nullable<Bool>,
+        ip -> Nullable<Text>,
         vhost -> Nullable<Bool>,
         date_added -> Timestamp,
-        notes -> Nullable<Varchar>,
-        protocol -> Nullable<Varchar>,
-        rid -> Nullable<Int4>,
+        notes -> Nullable<Text>,
+        protocol -> Nullable<Text>,
     }
 }
 
-joinable!(endpoint -> endpoints (eid));
-joinable!(endpoints -> sub_domains (sid));
+joinable!(end_point -> end_points (eid));
 
 allow_tables_to_appear_in_same_query!(
+    end_point,
+    end_points,
     endpoint,
-    endpoints,
-    root_domains,
     sub_domains,
 );
