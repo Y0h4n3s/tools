@@ -51,11 +51,29 @@ async fn main() -> juniper::futures::io::Result<()> {
         App::new().data(pool.clone().unwrap())
             .service(options)
             .service(data_post)
+            .service(data_get)
             .app_data(data.clone())
     })
         .bind(ops.address())?
         .run()
         .await
+}
+
+#[get("/")]
+async fn data_get() -> Result<HttpResponse, Error>{
+    println!("sending get");
+    Ok(HttpResponse::Ok()
+           .header(
+               "Access-Control-Allow-Origin",
+               "*"
+           )
+           .header(
+               "Access-Control-Allow-Methods",
+               "POST, GET, OPTIONS")
+           .header(
+               "Access-Control-Allow-Headers",
+               "Content-Type")
+           .finish())
 }
 
 //handle all saving operations
@@ -71,11 +89,11 @@ async fn data_post(pool: web::Data<DbPool>,
     //get the database connection grom the event pool
     let conn =
         pool.get().expect("Couldn't Get A Database Connection From The Pool");
-    println!("{:?} ", data.deref().no_file());
+    //println!("{:?} ", data.deref().no_file());
 
     //parse the request from the browser into a usable format
     let root_domain = data.root_domain();
-    println!("{:?}", root_domain.clone());
+    //println!("{:?}", root_domain.clone());
     let parser =
         Parser::new(
             info.into_inner().everything_else,
@@ -108,10 +126,11 @@ async fn data_post(pool: web::Data<DbPool>,
     }
 
     //respond with a 200 OK
+    println!("sendingpost");
     Ok(HttpResponse::Ok()
         .header(
             "Access-Control-Allow-Origin",
-            "chrome-extension://ojddniephhbohamkfcejdoomfdcfbjig"
+            "*"
         )
         .header(
             "Access-Control-Allow-Methods",
@@ -125,11 +144,20 @@ async fn data_post(pool: web::Data<DbPool>,
 
 //initiate a successful cors connection with the browser
 #[options("/")]
-async fn options() -> impl Responder {
-    HttpResponse::build(StatusCode::OK)
-        .with_header("Access-Control-Allow-Origin", "*")
-        .with_header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-        .with_header("Access-Control-Allow-Headers", "Content-Type")
+async fn options() -> Result<HttpResponse, Error> {
+    println!("sending opt");
+    Ok(HttpResponse::Ok()
+           .header(
+               "Access-Control-Allow-Origin",
+               "*"
+           )
+           .header(
+               "Access-Control-Allow-Methods",
+               "POST, GET, OPTIONS")
+           .header(
+               "Access-Control-Allow-Headers",
+               "Content-Type")
+           .finish())
 }
 
 

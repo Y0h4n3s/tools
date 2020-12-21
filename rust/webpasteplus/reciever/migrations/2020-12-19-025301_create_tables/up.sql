@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS end_point (
     id SERIAL PRIMARY KEY,
     value TEXT,
     params TEXT,
+    hitcount INT NOT NULL,
     eid INT,
     CONSTRAINT eid
         FOREIGN KEY(eid)

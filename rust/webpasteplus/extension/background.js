@@ -12,7 +12,7 @@ chrome.runtime.onInstalled.addListener(function () {
 
 let canceled = false
 chrome.runtime.onMessage.addListener(async function (message, sender, sendResponse) {
-    if (message.theSignal) {
+    if (message.theStopSignal) {
         canceled = true;
         localStorage.removeItem("tabId")
         return
@@ -21,6 +21,13 @@ chrome.runtime.onMessage.addListener(async function (message, sender, sendRespon
     let repeatTimes = message.repeatTimes
     let code = message.code
     let onSuccess = message.onsuccess
+    if (message.theLiveSignal) {
+    try{
+        goLive(code);
+    } catch(error) {
+        goLive(code);
+    }
+    }
     for (let i = 0; i < repeatTimes; i++) {
         if(canceled)break
         try {
@@ -32,6 +39,46 @@ chrome.runtime.onMessage.addListener(async function (message, sender, sendRespon
     localStorage.removeItem("tabId")
     return
 })
+
+async function goLive(code) {
+    localStorage.setItem("liveCode", code);
+    chrome.tabs.query({active: true, currentWindow: true}, (tab) => {
+        if (tab[0] != null) {
+        let liveTabs = (localStorage.getItem("liveTabs")? localStorage.getItem("liveTabs") : "")  + String(tab[0].id)+ ",";
+        localStorage.setItem("liveTabs", liveTabs)
+        chrome.tabs.onUpdated.addListener((tabid, info, tab) => {
+            let tabs = liveTabs.split(",");
+            let snippet = localStorage.getItem("liveCode");
+            let server = "http://" + "127.0.0.1:8889" || 'localhost'
+            let token = "iloveweb"
+            if (tabs.find(n => n == String(tabid))) {
+                chrome.tabs.executeScript(
+                    tabid,
+                    { code: snippet },
+
+                    async function (results) {
+                    //console.log("results:", results[0])
+                        var dat = JSON.stringify({
+
+                                                    "token": token,
+                                                    "everything_else": results[0]
+
+                                            })
+                        const response = await fetch(server, {
+                        method: "POST",
+                        mode: "cors",
+                        headers: {
+                            "Content-Type": "application/json"
+                        },
+                        body: dat
+                        })
+
+                })
+            }
+        })
+    }
+    })
+}
 
 function next(code, success, timeout, reps) {
     if (reps <= 0) return

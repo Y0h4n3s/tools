@@ -2,7 +2,7 @@
     "name": "webpaste",
     "version": "1.0",
     "description": "don't use this lol",
-    "permissions": ["storage", "declarativeContent", "activeTab", "tabs", "background"],
+    "permissions": ["storage", "declarativeContent", "activeTab", "tabs", "background", "<all_urls>"],
     "background": {
         "scripts": ["background.js"],
         "persistent": false

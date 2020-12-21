@@ -28,7 +28,7 @@ impl Parser {
         let request_json = self.data.clone();
         let the_useful_data = request_json[2].clone();
         //TODO implement choice filtering by hostname
-        println!("{}", self.root_domain);
+        println!("{:?}", self.data);
         let hostnames: HashMap<String, HashMap<String, HashMap<String, Vec<String>>>> =
            get_root_hostnames(the_useful_data.clone(), self.root_domain.clone());
         //let hostnames_entry: HashMap<String, HashMap<String, Vec<String>>> =

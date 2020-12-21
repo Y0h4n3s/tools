@@ -46,6 +46,7 @@ pub struct EndPoint {
     pub id: Option<i32>,
     pub value : Option<String>,
     pub params: Option<String>,
+    pub hitcount: Option<i32>,
     pub eid: i32,
 }
 
@@ -55,6 +56,7 @@ pub struct EndPoint {
 pub struct EndPointInsert {
     pub value : Option<String>,
     pub params: Option<String>,
+    pub hitcount: i32,
     pub eid: i32,
 }
 
@@ -73,7 +75,7 @@ pub trait JsonerWithFKString<T> {
 impl Jsoner<SubDomainInsert> for SubDomainInsert{
     fn jsonify(&self) -> serde_json::Result<SubDomainInsert> {
         let mut json = format!(r#"{{"hostname": "{}", "ip": null, "vhost": null, "notes": null, "is_root":null}}"#, self.hostname);
-        println!("canceled?? {}",json);
+        //println!("canceled?? {}",json);
         serde_json::from_str::<SubDomainInsert>(&json)
     }
 }
@@ -81,15 +83,15 @@ impl Jsoner<SubDomainInsert> for SubDomainInsert{
 impl JsonerWithFKString<EndPointsInsert> for EndPointsInsert{
     fn jsonify(&self, fk: String) -> serde_json::Result<EndPointsInsert> {
         let mut json = format!(r#"{{"list_type": "s", "sid": "{}"}}"#, fk);
-        println!("canceled?? {}",json);
+        //println!("canceled?? {}",json);
         serde_json::from_str::<EndPointsInsert>(&json)
     }
 }
 
 impl JsonerWithFK<EndPointInsert> for EndPointInsert{
     fn jsonify(&self, fk: i32) -> serde_json::Result<EndPointInsert> {
-        let mut json = format!(r#"{{"value": "{}", "params":null, "eid": {}}}"#, self.value.as_ref().unwrap_or(&"".to_string()), fk);
-        println!("canceled?? {}",json);
+        let mut json = format!(r#"{{"value": "{}", "params":null, "hitcount": {},  "eid": {}}}"#, self.value.as_ref().unwrap_or(&"".to_string()), self.hitcount, fk);
+        //println!("canceled?? {}",json);
         serde_json::from_str::<EndPointInsert>(&json)
     }
 }

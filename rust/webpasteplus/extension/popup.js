@@ -5,16 +5,26 @@ chrome.storage.sync.get('config', function(data){
         return
     }
 
-    data.config.snippets.map(s => {
-        console.log(s)
-        buttons.appendChild(buttonTemplate(s))
-    })
     let dp = new DOMParser()
+    let liveButton = dp.parseFromString(`
+        <button></button>
+    `, 'text/html').querySelector('button')
+        liveButton.innerText = "Live"
+        buttons.appendChild(liveButton)
     let stopButton = dp.parseFromString(`
     <button></button>
 `, 'text/html').querySelector('button')
     stopButton.innerText = "Stop"
     buttons.appendChild(stopButton)
+    data.config.snippets.map(s => {
+        console.log(s)
+        if (s.name == "pagegrap") {
+            liveButton.value = s.name;
+            liveButton.dataset.code = s.code;
+            liveButton.dataset.onsuccess = s.onsuccess;
+        }
+        buttons.appendChild(buttonTemplate(s))
+    })
 })
 
 
@@ -26,17 +36,22 @@ let current
 let tabId = null
 function proceed(e, auto=true){
     localStorage.removeItem("tabId")
-    if (e.target.innerText == "Stop"){
-        chrome.runtime.sendMessage({theSignal: true})
-        return
-    }
     timeout = 7//parseInt(prompt("Interval Between Requests(In Seconds)"))
     repeatTimes = 30000//parseInt(prompt("How Many Repititions"))
     current = e.target
+    if (e.target.innerText == "Stop"){
+        chrome.runtime.sendMessage({theStopSignal: true})
+        return
+    }
+    if (e.target.innerText == "Live") {
+        chrome.runtime.sendMessage({theLiveSignal: true, code: current.dataset.code})
+        return
+    }
     if (!timeout || ! repeatTimes) return
     chrome.runtime.sendMessage(
         {
-            theSignal: false,
+            theStopSignal: false,
+            theLiveSignal: false,
             timeout: timeout,
             repeatTimes: repeatTimes,
             code: current.dataset.code,

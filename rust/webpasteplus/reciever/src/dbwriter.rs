@@ -40,7 +40,7 @@ impl DbWriter {
         use diesel::*;
         let valid_inputs = data.get("valids").unwrap();
 
-        //println!("inserting all: {:?}", data);
+        println!("inserting all: {:?}", data);
         for (domain, hrefs) in valid_inputs {
             let mut next_id = "".to_string();
             let domain_exists: Vec<Option<String>> =
@@ -59,7 +59,7 @@ impl DbWriter {
                     .select(id).get_result::<i32>(conn)
                     .unwrap();
 
-                println!("eps_id: {}", eps_id);
+                //println!("eps_id: {}", eps_id);
                 {
                     use crate::schema::end_point::dsl::*;
                     for (href, endpoints) in hrefs {
@@ -74,6 +74,7 @@ impl DbWriter {
                                 let inserted_endpoint = EndPointInsert {
                                     value: Option::from(endpoint.to_string()),
                                     params: None,
+                                    hitcount: 0,
                                     eid: eps_id.clone()
                                 }.jsonify(eps_id.clone()).unwrap();
                                 let query =
@@ -82,6 +83,24 @@ impl DbWriter {
                                 let result =
                                     query.returning(id).get_result::<i32>(conn).unwrap();
                                 //println!("[+] insert results: {:?}", result);
+                            } else {
+                                let hits =
+                                    end_point.filter(value.eq(endpoint))
+                                        .select(hitcount)
+                                        .get_result::<i32>(conn).unwrap();
+                                let inserted_endpoint = EndPointInsert {
+                                    value: Option::from(endpoint.to_string()),
+                                    params: None,
+                                    hitcount: hits + 1,
+                                    eid: eps_id.clone()
+                                }.jsonify(eps_id.clone()).unwrap();
+                                let query =
+                                    insert_into(end_point).values(&inserted_endpoint);
+                                //println!("[*] trying to insert into endpoint data {} ", debug_query::<Pg, _>(&query));
+                                let result =
+                                    query.returning(id).get_result::<i32>(conn).unwrap();
+                                //println!("[+] insert results: {:?}", result);
+
                             }
                         }
                     }
@@ -127,6 +146,7 @@ impl DbWriter {
                             let inserted_endpoint = EndPointInsert {
                                 value: Option::from(endpoint.to_string()),
                                 params: None,
+                                hitcount: 0,
                                 eid: next_entry_id.clone()
                             }.jsonify(next_entry_id.clone()).unwrap();
                             let query =

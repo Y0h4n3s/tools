@@ -3,6 +3,7 @@ table! {
         id -> Int4,
         value -> Nullable<Text>,
         params -> Nullable<Text>,
+        hitcount -> Int4,
         eid -> Nullable<Int4>,
     }
 }
@@ -13,15 +14,6 @@ table! {
         date_added -> Timestamp,
         list_type -> Bpchar,
         sid -> Nullable<Text>,
-    }
-}
-
-table! {
-    endpoint (id) {
-        id -> Int4,
-        value -> Nullable<Varchar>,
-        params -> Nullable<Varchar>,
-        eid -> Nullable<Int4>,
     }
 }
 
@@ -43,6 +35,5 @@ joinable!(end_point -> end_points (eid));
 allow_tables_to_appear_in_same_query!(
     end_point,
     end_points,
-    endpoint,
     sub_domains,
 );

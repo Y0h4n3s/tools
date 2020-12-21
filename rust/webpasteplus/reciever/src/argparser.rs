@@ -39,7 +39,7 @@ impl Arguments {
                 let root_domain: Option<String> =
                     Arguments::get_arg_value(provided,
                                              String::from("-r:--root-domain"));
-                println!("root: {:?}", root_domain);
+                //println!("root: {:?}", root_domain);
 
                 let mut server_ops: ServerOptions = ServerOptions::new();
                 server_ops
