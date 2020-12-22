@@ -1,0 +1,23 @@
+[package]
+name = "webpasteplusi"
+version = "0.1.0"
+authors = ["Y0h4n3s <yohaksa80@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+hyper = "0.13.9"
+tokio = { version = "0.2", features = ["full"] }
+futures = "0.3"
+log = "0.4"
+pretty_env_logger = "0.3"
+dotenv = "0.15.0"
+clap = {version = "2.33", features = ["yaml"]}
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
+diesel = {version = "1.4.5", features = ["postgres", "r2d2"]}
+gotham = "0.5.0"
+gotham_derive = "0.5.0"
+gotham_middleware_diesel = "0.2.0"

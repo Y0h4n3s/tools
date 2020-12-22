@@ -1,0 +1,28 @@
+name: webpasteplusi
+version: "0.0"
+author: me
+about: does stuff
+subcommands:
+  - consume:
+      short: s
+      about: Start The Server And Feed Me
+      args:
+        - address:
+            short: a
+            long: bind-address
+            help: Address To Bind To
+            takes_value: true
+        - nofile:
+            short: n
+            long: no-file
+            help: Don't Save To Files
+        - dbcreds:
+            short: d
+            long: db-connection
+            help: Database Connection Info
+            takes_value: true
+        - filepath:
+            short: f
+            long: save-path
+            takes_value: true
+            help: Defaults To The Current Path
