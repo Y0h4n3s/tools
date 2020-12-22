@@ -1,0 +1,50 @@
+* {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.btn {
+  padding: 1em 1.5em;
+  border: none;
+  border-radius: 2%/5%;
+  background: cadetblue;
+  color: white;
+  transition: 0.2s cubic-bezier(0.42, 0, 0, 1.31);
+}
+
+.btn:hover {
+  background: darkblue;
+  transform: scale(0.95);
+  outline: dashed 3px orange;
+}
+
+.ipt {
+  padding: 0.5em 0.7em;
+  border: inset 1px orange;
+  outline: orange;
+  border-radius: 3%/7%;
+}
+div#user-options {
+  width: 100%;
+
+  padding: 0 21.5em;
+}
+
+.executable {
+  display: flex;
+  flex-direction: column;
+  /* align-items: center; */
+  /* justify-content: center; */
+  width: 100%;
+}
+.executable .bado-executable{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
