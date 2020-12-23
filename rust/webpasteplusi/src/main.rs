@@ -1,3 +1,4 @@
+mod models;
 mod handlers;
 mod schema;
 
@@ -5,6 +6,8 @@ extern crate pretty_env_logger;
 #[macro_use] extern crate log;
 #[macro_use] extern crate clap;
 #[macro_use] extern crate serde_derive;
+#[macro_use] extern crate diesel;
+
 use std::convert::Infallible;
 use std::net::SocketAddr;
 use std::fs::File;
@@ -14,21 +17,16 @@ use std::{env, io};
 use hyper::service::{make_service_fn, service_fn};
 use futures::TryStreamExt as _;
 use dotenv::dotenv;
-use clap::App;
+use clap::App as CApp;
 use serde_json;
 use serde_derive::Deserialize;
 use diesel::r2d2;
 use diesel::r2d2::ConnectionManager;
 use diesel::PgConnection;
-use gotham::router::Router;
-use gotham::router::builder::*;
 
 use self::handlers::*;
-use gotham::pipeline::single::single_pipeline;
-use gotham::pipeline::new_pipeline;
-use gotham_middleware_diesel::DieselMiddleware;
-
-pub type Repo = gotham_middleware_diesel::Repo<PgConnection>;
+use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, middleware};
+use actix_web::http::{Method};
 
 
 
@@ -38,12 +36,20 @@ struct Config {
     dbcreds: String
 }
 
+#[derive(Clone, Debug)]
+pub struct AppState {
+    address: String,
+    dbcreds: String,
+    no_file: bool,
+
+}
+
  fn main() {
     dotenv().ok();
     pretty_env_logger::init();
 
     let yaml = load_yaml!("cli.yml");
-    let matches = App::from_yaml(yaml).get_matches();
+    let matches = CApp::from_yaml(yaml).get_matches();
 
     let config = File::open("service.toml")
         .and_then(|mut file| {
@@ -80,7 +86,12 @@ struct Config {
                 .and_then(|dbcreds| dbcreds.parse().ok())
                 .or_else(||Some("".to_string()));
 
-            start_consuming(addr, dbcreds.clone());
+            let app_config = AppState {
+                address: addr.to_string(),
+                dbcreds: dbcreds.unwrap(),
+                no_file: matches.is_present("no-file")
+            };
+            start_consuming(app_config);
 
 
         }
@@ -95,30 +106,32 @@ struct Config {
 
 }
 
-fn router(repo: Repo) -> Router {
-    let (chain, pipeline) =
-        single_pipeline(new_pipeline().add(DieselMiddleware::new(repo)).build());
 
-
-    build_router(chain, pipeline, |route| {
-        route.get_or_head("/").to(index);
-        route.options("/").to(cors_options);
-        route.options("*").to(cors_options);
-
-
-        route.scope("/hostname", | route | {
-            route.options("/hostname_hrefs").to(cors_options);
-            route.options("/hostname_protocol").to(cors_options);
-            route.options("/hostname_ip").to(cors_options);
-            route.post("/hostname_protocol").to(hostname_types::hostname_protocol);
-            route.post("/hostname_hrefs").to(hostname_types::hostname_protocol);
-            route.post("/hostname_ip").to(hostname_types::hostname_protocol);
-        })
-    })
-}
-fn start_consuming(addr: SocketAddr, dbcreds: Option<String>) {
+#[actix_web::main]
+async fn start_consuming(app_config: AppState) -> std::io::Result<()> {
 
     // Run this server for... forever!
-    debug!("Listening For Requests on {:?} ...", addr);
-    gotham::start(addr.to_string(), router(Repo::new(&dbcreds.unwrap())));
+    debug!("Listening For Requests on {:?} ...", app_config.address);
+    let address = app_config.address.clone();
+    HttpServer::new(move || {
+        let json_config = web::JsonConfig::default().limit(1005535);
+        App::new()
+            .wrap(middleware::Logger::default())
+            .data(app_config.clone())
+            .service(
+                web::scope("/hostname")
+                    .app_data(json_config)
+                    .route("/hostname_protocol", web::post().to(hostname_types::hostname_protocol))
+                    .route("/hostname_hrefs", web::post().to(hostname_types::hostname_hrefs))
+                    .route("/hostname_ip", web::post().to(hostname_types::hostname_ip))
+                    .route("/hostname_much_data", web::post().to(hostname_types::hostname_much_data))
+                    .route("/hostname_own_links", web::post().to(hostname_types::hostname_much_data))
+            )
+
+
+
+    })
+        .bind(address)?
+        .run()
+        .await
 }

@@ -2,12 +2,12 @@
 
 chrome.runtime.onInstalled.addListener(details => {
 
-  chrome.storage.local.set({ registeredTabs: [] }, () => {
+  /* chrome.storage.local.set({ registeredTabs: [] }, () => {
     chrome.storage.local.set({ configs: {} }, () => {
       console.log("Installed Succesfully")
 
     })
-  })
+  }) */
 
 })
 
@@ -32,7 +32,7 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     .then(async response => {
       console.log("Added New Tab", response)
       if (reps >= 0 && !isLiveExecution) {
-        await runTillReps(response.tabId, response.executableId, reps, timeout)
+        await runTillReps(response.tabId, response.executableId, endpointPath, reps, timeout)
       }
       else if (isLiveExecution) {
         runLive(response.tabId, response.executableId)
@@ -45,11 +45,12 @@ chrome.tabs.onUpdated.addListener((tabid, change, tab) => {
   if (change.status = "complete") {
     
     chrome.storage.local.get(['registeredTabs'], result => {
-      if (!result.registeredTabs.entries().next().done) {
+      
+      if (result.registeredTabs && !result.registeredTabs.entries().next().done) {
         result.registeredTabs.forEach(async element => {
           if (element.isLiveExecution && element.isLiveActive && element.tabId == tabid) {
             console.log("Going Live On:", tabid)
-            await execute(tabid, element.executableCode, element.server, 0)
+            await execute(tabid, element.executableCode, element.server, element.endpointPath, 0)
           }
         })
       }
@@ -105,7 +106,7 @@ async function killAThread(message) {
           }
         });
 
-        chrome.storage.local.set(result, () => console.log("Stopped One Job"))
+        chrome.storage.local.set(result, () => console.log("Stopping One Job"))
       })
     }
   })
@@ -116,9 +117,10 @@ async function stopMe(tabid, executableId) {
     chrome.storage.local.get(['registeredTabs'], result => {
       result.registeredTabs.forEach(element => {
         if (element.tabId == tabid && element.executableId == executableId && element.shouldIStop) {
-
-          console.log("Removing: ", result.registeredTabs.splice(result.registeredTabs.indexOf(element), 1))
-          chrome.storage.local.set({ result }, () => console.log("Finishing Final Request"))
+          let t = result.registeredTabs
+          let work = t.splice(result.registeredTabs.indexOf(element), 1)
+          console.log("Removing Work: ", t)
+          chrome.storage.local.set({ registeredTabs: result.registeredTabs }, () => console.log("Finishing Final Request"))
           resolve(true)
         }
       });
@@ -127,14 +129,14 @@ async function stopMe(tabid, executableId) {
     })
   })
 }
-async function runTillReps(tabid, executableId, reps, timeout) {
+async function runTillReps(tabid, executableId, endpointPath, reps, timeout) {
 
   chrome.storage.local.get(['configs'], async result => {
     if (result.configs.executables) {
       let executableCode = result.configs.executables.filter(n => n.executableId == executableId)[0].executableCode;
       for (let i = 0; i < reps && !await stopMe(tabid, executableId); i++) {
         console.log("Executing:", executableCode)
-        await execute(tabid, executableCode, result.configs.server, timeout).catch(err => console.log(err))
+        await execute(tabid, executableCode, result.configs.server, endpointPath,timeout).catch(err => console.log(err))
       }
     }
   })
@@ -150,21 +152,22 @@ async function registerTab(server, executableCode, executableId, executableName,
         let tabid = tab[0].id
         console.log(tab[0])
         chrome.storage.local.get(['registeredTabs'], result => {
-          if (result.registeredTabs.entries().next().done) {
-            let newData = {
-              postedTo: server,
-              executableCode: executableCode,
-              executableId: executableId,
-              executableName: executableName,
-              endpointPath: endpointPath,
-              reps: reps,
-              sleepTime: sleeptime,
-              tabId: tabid,
-              shouldIStop: false,
-              isLiveExecution: isLiveExecution,
-              isLiveActive: false
+          let newData = {
+            postedTo: server,
+            executableCode: executableCode,
+            executableId: executableId,
+            executableName: executableName,
+            endpointPath: endpointPath,
+            reps: reps,
+            sleepTime: sleeptime,
+            tabId: tabid,
+            shouldIStop: false,
+            isLiveExecution: isLiveExecution,
+            isLiveActive: false
 
-            }
+          }
+          if (result.registeredTabs.entries().next().done) {
+            
             chrome.storage.local.set(
               {
                 registeredTabs: [ newData ]
@@ -197,16 +200,21 @@ async function registerTab(server, executableCode, executableId, executableName,
 
 
 
-async function execute(tabid, executable, server, sleepTime) {
+async function execute(tabid, executable, server, path, sleepTime) {
   return new Promise(resolve => {
     chrome.tabs.get(tabid, tab => {
       if (tab != undefined) {
+        console.log("Executing: ", executable)
         chrome.tabs.executeScript(tabid, { code: executable }, result => {
           if (result != undefined) {
+            console.log("Found Result: ", result) 
             try {
-              fetch(server, {
+              fetch(server + path, {
                 method: "POST",
-                mode: "no-cors",
+                mode: "cors",
+                headers: {
+                  "Content-Type": "application/json"
+              },
                 body: JSON.stringify({
                   "data": result[0]
                 })

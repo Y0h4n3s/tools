@@ -8,6 +8,11 @@ const liveCheck = document.querySelector("#live-check")
 const badoEnpointPath = document.querySelector(".bado-extractor-endpointpath-ipt")
 
 
+chrome.storage.local.get(['configs'], result => {
+  updateDisplay(result)
+
+})
+
 liveCheck.addEventListener("click", toggleLiveMode);
 
 function toggleLiveMode(e) {
@@ -23,7 +28,8 @@ saveButton.addEventListener("click", e => {
   let isLiveExecution = liveCheck.checked
   let executableCodeAfter = isLiveExecution ? "" : badoNonLiveCodeArea.value
   chrome.storage.local.get(['configs'], function (result) {
-    if (result['configs'].executables.entries().next().done) {
+
+    if (!result.configs.executables || result['configs'].executables.entries().next().done) {
       chrome.storage.local.set(
         {
           configs: {
@@ -66,6 +72,7 @@ saveButton.addEventListener("click", e => {
           })
         })
     }
+
   })
 
 })
@@ -78,6 +85,7 @@ function updateDisplay(data) {
   if (!data.configs.executables) {
     return
   }
+  serverInput.value = data.configs.server
   data["configs"]["executables"].forEach(element => {
     let extractor = dp.parseFromString(`
     <div class="executable">
@@ -85,15 +93,15 @@ function updateDisplay(data) {
       <input type="text" class="extractor-name-ipt ipt" name="extractor-name-ipt" value="${element.executableName}" disabled>
       <input type="text" class="extractor-endpointpath-ipt ipt" name="extractor-endpointpath-ipt" value="${element.endpointPath}" disabled>
       <input type="hidden" name="extractor-id-ipt" class="extractor-id-ipt ipt" value="${element.executableId}" disabled>
-      <textarea name="extractor-code-textarea textarea" id="extractor-code" cols="30" rows="10" placeholder="${element.executableCode}" disabled></textarea>
+      <textarea name="extractor-code-textarea textarea" id="extractor-code" cols="30" rows="10" placeholder=\`${element.executableCode}\` disabled></textarea>
       <lable for="live-checker" disabled>Live</lable>
       <input type="checkbox" name="live-checker" id="live-check" class="live-check checkbox" ${element.isLiveExecution ? "checked" : ""} disabled>
       <textarea name="nonlive-code-textarea textarea" id="nonlive-code-textarea" style="display:${element.isLiveExecution ? "none" : "inline-block"}" cols="30" rows="10" placeholder="${element.executableCodeAfter}" disabled></textarea>
       <button class="delete-single-btn btn" value="Delete" >Delete </button>
     </div>
   `, "text/html")
-    
-    
+
+
     extractor.querySelector(".delete-single-btn").addEventListener("click", deleteme)
     document.querySelector(".added-options").appendChild(extractor.querySelector(".executable"))
   });

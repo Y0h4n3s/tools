@@ -1,0 +1,1 @@
+DROP TABLE IF EXISTS end_points, end_point, params
