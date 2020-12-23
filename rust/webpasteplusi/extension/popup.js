@@ -1,5 +1,6 @@
 const stopAllButton = document.querySelector('.stop-all-execution-btn')
-
+const repsInput = document.querySelector('.rept-ipt')
+const timeoutInput = document.querySelector('.timeout-ipt')
 stopAllButton.addEventListener('click', stopButtonClicked);
 
 chrome.storage.local.get(["configs"], result => {
@@ -10,9 +11,15 @@ chrome.storage.local.get(["configs"], result => {
     result.configs.executables.forEach(element => {
       let butn = dp.parseFromString(`
       <div class="execute-popup-entry-container">
-      <p class="executable-name-text text"></p>
-      <button class="execute-btn btn" value="Save">Go</button>
-      <button class="stop-btn btn" value="Save">Stop</button>
+        <div class="executable-info-container">
+          <p class="executable-name-text text"></p>
+          <label for="is-live-checkbox">Live</p>
+          <input type="checkbox" name="is-live-checkbox" class="is-live-checkbox"> 
+        </div>
+        <div class="btn-container">
+          <button class="execute-btn btn" value="Save">Go</button>
+          <button class="stop-btn btn" value="Save">Stop</button>
+        </div>
       </div>
       `, 'text/html')
       butn.querySelector("p").innerText = element.executableName
@@ -28,6 +35,8 @@ chrome.storage.local.get(["configs"], result => {
       butn.querySelector(".stop-btn").dataset.endpointPath = element.endpointPath
       butn.querySelector(".stop-btn").dataset.isLiveExecution = element.isLiveExecution
       butn.querySelector(".stop-btn").addEventListener("click", stopButtonClicked)
+      butn.querySelector(".is-live-checkbox").checked = element.isLiveExecution
+
 
       document.querySelector(".btns-container").appendChild(butn.querySelector(".execute-popup-entry-container"))
     })
@@ -40,14 +49,15 @@ async function executeButtonClicked(e) {
     executableId: e.target.dataset.executableId,
     executableCode: e.target.dataset.executableCode,
     endpointPath: e.target.dataset.endpointPath,
-    executableId: e.target.dataset.executableId,
+    executableCodeAfter: e.target.dataset.executableCodeAfter,
     isLiveExecution: e.target.dataset.isLiveExecution == "true",
     executableName: e.target.value,
     stop: false,
-    live: false,
-    timeout: 3,
-    reps: 200,
+    timeout: parseInt(timeoutInput.value),
+    reps: parseInt(repsInput.value),
   })
+  e.target.classList.add('btn-active')
+
   return
 }
 
@@ -58,10 +68,22 @@ async function stopButtonClicked(e) {
       executableId: e.target.dataset.executableId,
       executableCode: e.target.dataset.executableCode,
       endpointPath: e.target.dataset.endpointPath,
-      executableId: e.target.dataset.executableId,
+      executableCodeAfter: e.target.dataset.executableCodeAfter,
       isLiveExecution: e.target.dataset.isLiveExecution == "true",
       executableName: e.target.value,
-
+    })
+    let buttons = document.querySelectorAll("button");
+    buttons.forEach(button => {
+      if (button.dataset.executableId == e.target.dataset.executableId && button.value != "Stop") {
+        button.classList.remove("btn-active")
+      }
+    })
+  } else if (e.target.innerHTML == "Stop All") {
+    chrome.runtime.sendMessage({stopAll: true})
+    let buttons = document.querySelectorAll("button");
+    buttons.forEach(button => {
+        button.classList.remove("btn-active")
     })
   }
+  
 }

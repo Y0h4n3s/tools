@@ -1,1 +1,1 @@
-DROP TABLE IF EXISTS sub_domains CASCADE
+DROP TABLE IF EXISTS sub_domains, port_protocol CASCADE

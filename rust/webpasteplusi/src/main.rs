@@ -1,6 +1,10 @@
-mod models;
+#![allow(unused)]
+
 mod handlers;
+mod actors;
+mod models;
 mod schema;
+mod helpers;
 
 extern crate pretty_env_logger;
 #[macro_use] extern crate log;
@@ -27,7 +31,7 @@ use diesel::PgConnection;
 use self::handlers::*;
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder, middleware};
 use actix_web::http::{Method};
-
+use std::process::exit;
 
 
 #[derive(Deserialize)]
@@ -43,6 +47,8 @@ pub struct AppState {
     no_file: bool,
 
 }
+
+type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
  fn main() {
     dotenv().ok();
@@ -110,13 +116,23 @@ pub struct AppState {
 #[actix_web::main]
 async fn start_consuming(app_config: AppState) -> std::io::Result<()> {
 
+    let manager = r2d2::ConnectionManager::<PgConnection>::new(&app_config.dbcreds);
+    let pool = r2d2::Pool::builder().build(manager).map_err(|e| {
+        warn!("Failed To Connect To The Database: {:?}",e);
+        if app_config.no_file {
+            debug!("Exiting...");
+            exit(1);
+        }
+    }).unwrap();
+
     // Run this server for... forever!
-    debug!("Listening For Requests on {:?} ...", app_config.address);
+    debug!("Listening For Requests on {:?} ...", &app_config.address);
     let address = app_config.address.clone();
     HttpServer::new(move || {
         let json_config = web::JsonConfig::default().limit(1005535);
         App::new()
             .wrap(middleware::Logger::default())
+            .data(pool.clone())
             .data(app_config.clone())
             .service(
                 web::scope("/hostname")
@@ -125,8 +141,9 @@ async fn start_consuming(app_config: AppState) -> std::io::Result<()> {
                     .route("/hostname_hrefs", web::post().to(hostname_types::hostname_hrefs))
                     .route("/hostname_ip", web::post().to(hostname_types::hostname_ip))
                     .route("/hostname_much_data", web::post().to(hostname_types::hostname_much_data))
-                    .route("/hostname_own_links", web::post().to(hostname_types::hostname_much_data))
+                    .route("/hostname_own_links", web::post().to(hostname_types::hostname_own_links))
             )
+            .route("/", web::get().to(index))
 
 
 

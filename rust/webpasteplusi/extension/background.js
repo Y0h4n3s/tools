@@ -19,16 +19,21 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     killAThread(message)
     return
   }
+  if (message.stopAll) {
+    killAllThreads()
+    return
+  }
 
   let timeout = message.timeout
   let executableCode = message.executableCode
   let executableName = message.executableName
   let executableId = message.executableId
   let endpointPath = message.endpointPath
+  let executableCodeAfter = message.executableCodeAfter
   let isLiveExecution = message.isLiveExecution
   let server = message.server
   let reps = message.reps
-  registerTab(server, executableCode, executableId, executableName, endpointPath, isLiveExecution, timeout, reps)
+  registerTab(server, executableCode, executableCodeAfter, executableId, executableName, endpointPath, isLiveExecution, timeout, reps)
     .then(async response => {
       console.log("Added New Tab", response)
       if (reps >= 0 && !isLiveExecution) {
@@ -43,9 +48,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 chrome.tabs.onUpdated.addListener((tabid, change, tab) => {
   if (change.status = "complete") {
-    
+
     chrome.storage.local.get(['registeredTabs'], result => {
-      
+
       if (result.registeredTabs && !result.registeredTabs.entries().next().done) {
         result.registeredTabs.forEach(async element => {
           if (element.isLiveExecution && element.isLiveActive && element.tabId == tabid) {
@@ -73,7 +78,7 @@ async function runLive(tabid, executableId) {
                   element.isLiveActive = true
                   chrome.storage.local.set(result, () => {
                     console.log("Added One Live Tab")
-                    document.location.reload(); 
+                    document.location.reload();
                   })
                 }
                 return
@@ -89,6 +94,17 @@ async function runLive(tabid, executableId) {
   })
 }
 
+async function killAllThreads() {
+  chrome.storage.local.get(['registeredTabs'], result => {
+    if (result.registeredTabs && !result.registeredTabs.entries().next().done) {
+      result.registeredTabs.forEach(tab => {
+        tab.shouldIStop = true
+      })
+      chrome.storage.local.set(result, () => console.log("Killing Workers..."))
+    }
+  })
+}
+
 async function killAThread(message) {
   chrome.tabs.query({ active: true, currentWindow: true }, tab => {
     if (tab != undefined) {
@@ -99,10 +115,12 @@ async function killAThread(message) {
         }
         result.registeredTabs.forEach(element => {
           if (element.tabId == tabid && element.executableId == message.executableId) {
-            if (!element.isLiveExecution)
+            if (!element.isLiveExecution) {
               element.shouldIStop = true
+            }
             else
               element.isLiveActive = false
+            unregisterTab(element)
           }
         });
 
@@ -112,15 +130,31 @@ async function killAThread(message) {
   })
 }
 
+function unregisterTab(element) {
+  chrome.storage.local.get(['registeredTabs'], result => {
+    if (result.registeredTabs && !result.registeredTabs.entries().next().done) {
+      let tempTabs = [];
+      result.registeredTabs.forEach(single => {
+        if (!element.isLiveActive &&
+          !single.isLiveActive &&
+          single.tabId != element.tabid &&
+          single.executableId != element.executableId) {
+          tempTabs.push(single)
+        }
+      })
+      clearRegisteredTabs()
+      chrome.storage.local.set({ registeredTabs: tempTabs }, () => console.log("Removed:", element))
+    }
+  })
+}
+
 async function stopMe(tabid, executableId) {
   return new Promise(resolve => {
     chrome.storage.local.get(['registeredTabs'], result => {
+      if (!result.registeredTabs || result.registeredTabs.entries().next().done) resolve(true)
       result.registeredTabs.forEach(element => {
         if (element.tabId == tabid && element.executableId == executableId && element.shouldIStop) {
-          let t = result.registeredTabs
-          let work = t.splice(result.registeredTabs.indexOf(element), 1)
-          console.log("Removing Work: ", t)
-          chrome.storage.local.set({ registeredTabs: result.registeredTabs }, () => console.log("Finishing Final Request"))
+          unregisterTab(element)
           resolve(true)
         }
       });
@@ -134,9 +168,9 @@ async function runTillReps(tabid, executableId, endpointPath, reps, timeout) {
   chrome.storage.local.get(['configs'], async result => {
     if (result.configs.executables) {
       let executableCode = result.configs.executables.filter(n => n.executableId == executableId)[0].executableCode;
+      let executableCodeAfter = result.configs.executables.filter(n => n.executableId == executableId)[0].executableCodeAfter;
       for (let i = 0; i < reps && !await stopMe(tabid, executableId); i++) {
-        console.log("Executing:", executableCode)
-        await execute(tabid, executableCode, result.configs.server, endpointPath,timeout).catch(err => console.log(err))
+        await execute(tabid, executableCode, result.configs.server, endpointPath, timeout, executableCodeAfter).catch(err => console.log(err))
       }
     }
   })
@@ -144,7 +178,7 @@ async function runTillReps(tabid, executableId, endpointPath, reps, timeout) {
 }
 
 
-async function registerTab(server, executableCode, executableId, executableName, endpointPath, isLiveExecution, sleeptime, reps) {
+async function registerTab(server, executableCode, executableCodeAfter, executableId, executableName, endpointPath, isLiveExecution, sleeptime, reps) {
 
   return new Promise(resolve => {
     chrome.tabs.query({ active: true, currentWindow: true }, tab => {
@@ -158,6 +192,7 @@ async function registerTab(server, executableCode, executableId, executableName,
             executableId: executableId,
             executableName: executableName,
             endpointPath: endpointPath,
+            executableCodeAfter: executableCodeAfter,
             reps: reps,
             sleepTime: sleeptime,
             tabId: tabid,
@@ -167,10 +202,10 @@ async function registerTab(server, executableCode, executableId, executableName,
 
           }
           if (result.registeredTabs.entries().next().done) {
-            
+
             chrome.storage.local.set(
               {
-                registeredTabs: [ newData ]
+                registeredTabs: [newData]
               },
               () => {
 
@@ -200,28 +235,40 @@ async function registerTab(server, executableCode, executableId, executableName,
 
 
 
-async function execute(tabid, executable, server, path, sleepTime) {
+async function execute(tabid, executable, server, path, sleepTime, nextExecutable = null) {
   return new Promise(resolve => {
     chrome.tabs.get(tabid, tab => {
       if (tab != undefined) {
         console.log("Executing: ", executable)
         chrome.tabs.executeScript(tabid, { code: executable }, result => {
           if (result != undefined) {
-            console.log("Found Result: ", result) 
+            console.log("Found Result: ", result)
             try {
               fetch(server + path, {
                 method: "POST",
                 mode: "cors",
                 headers: {
                   "Content-Type": "application/json"
-              },
+                },
                 body: JSON.stringify({
                   "data": result[0]
                 })
               }).then(async response => {
-                resolve(sleep(sleepTime * 1000))
+                if (nextExecutable == null)
+                  resolve(sleep(sleepTime * 1000))
+                else {
+                  chrome.tabs.executeScript(tabid, {code: nextExecutable}, result => {
+                    resolve(sleep(sleepTime * 1000))
+                  })
+                }
               }).catch(async err => {
-                resolve(sleep(sleepTime * 1000))
+                if (nextExecutable == null)
+                  resolve(sleep(sleepTime * 1000))
+                else {
+                  chrome.tabs.executeScript(tabid, {code: nextExecutable}, result => {
+                    resolve(sleep(sleepTime * 1000))
+                  })
+                }
               })
             } catch (err) {
               console.log(err)
@@ -238,10 +285,38 @@ async function sleep(millis) {
   return new Promise(r => setTimeout(r, millis ? millis : 7000))
 }
 
-async function clearRegisteredTabs(e) {
+async function clearRegisteredTabs(e = null) {
   return new Promise(resolve => {
     resolve(
       chrome.storage.local.set({ registeredTabs: [] }, () => { })
     )
   })
 }
+
+
+// Shortcut Listener
+
+chrome.commands.onCommand.addListener((command, tab) => {
+
+  chrome.storage.local.get(['configs'], result => {
+    if (command == ",") {
+      if (!result.configs.executables || result['configs'].executables.entries().next().done) {
+        return
+      } else {
+        result.configs.executables.forEach(element => {
+          execute(tab[0].id, element.executableCode, result.configs.server, element.endpointPath, 0)
+        })
+      }
+    } else if (
+      command == "1" ||
+      command == "2" ||
+      command == "3"
+    ) {
+      result.configs.executables.forEach(element => {
+        if (element.executableId == command) {
+          execute(tab[0].id, element.executableCode, result.configs.server, element.endpointPath, 0)
+        }
+      })
+    }
+  })
+})

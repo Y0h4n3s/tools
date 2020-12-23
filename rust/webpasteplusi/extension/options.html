@@ -9,23 +9,28 @@
 </head>
 
 <body>
-  <label for="server">Server Address: </label>
+  <label for="server">Server Address </label>
   <input name="server" type="text" class="server-ipt ipt">
-  <div class="added-options ops-container" id="user-options">
-    <div class="bado-executable">
-      <label for="bado-extractor-name-ipt">Extractor Name: </label>
-      <input type="text" class="bado-extractor-name-ipt ipt" name="bado-extractor-name-ipt">
-      <input type="text" class="bado-extractor-endpointpath-ipt ipt" name="bado-extractor-endpointpath-ipt">
-      <input type="hidden" name="bado-extractor-id-ipt" class="bado-extractor-id-ipt ipt">
-      <textarea name="bado-extractor-code-textarea textarea" id="bado-extractor-code" cols="30" rows="10"></textarea>
+
+  <div class="bado-executable">
+    <label for="bado-extractor-name-ipt">Extractor Name: </label>
+    <input type="text" class="bado-extractor-name-ipt ipt" name="bado-extractor-name-ipt">
+    <label for="bado-extractor-endpointpath-ipt">Endpoint Path: </label>
+    <input type="text" class="bado-extractor-endpointpath-ipt ipt" name="bado-extractor-endpointpath-ipt">
+    <input type="hidden" name="bado-extractor-id-ipt" class="bado-extractor-id-ipt ipt">
+    <label for="bado-extractor-code-textarea">Executable Code: </label>
+    <textarea name="bado-extractor-code-textarea textarea" id="bado-extractor-code" cols="110" rows="15"></textarea>
+    <div class="live-check-container">
       <label for="live-checker">Live</label>
       <input type="checkbox" name="live-checker" id="live-check" class="live-check checkbox">
-      <textarea name="bado-nonelive-code-textarea textarea" id="bado-nonelive-code" cols="30" rows="10"></textarea>
-
     </div>
+    <textarea name="bado-nonelive-code-textarea textarea" id="bado-nonelive-code" cols="110" rows="15"></textarea>
+
+  </div>
   </div>
   <button class="save-btn btn" value="Save">Save </button>
   <button class="clear-btn btn" value="Clear">Clear Storage </button>
+  <div class="added-options ops-container" id="user-options"></div>
   <script src="options.js"></script>
 </body>
 

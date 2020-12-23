@@ -1,0 +1,50 @@
+body {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.btn {
+  padding: 0.3em 1em;
+  color: white;
+  background: black;
+  border: outset;
+  cursor: pointer;
+}
+
+.btn-active {
+  background: red;
+}
+
+.btn:active {
+  transform: scale(0.9);
+  outline: 2px dashed black;
+}
+
+.execute-popup-entry-container {
+  display: flex;
+  align-items: center;
+  border: outset 0.1em blueviolet;
+  border-bottom: none;
+  justify-content: left;
+  padding: .7em;
+  border-radius: 2%/10%;
+  flex-direction: column;
+}
+.executable-info-container {
+  display: flex;
+  flex-wrap: nowrap;
+  justify-content: flex-start;
+  width: 100%;
+}
+
+p {
+  margin: 0;
+}
+.btn-container {
+  width: 100%;
+}
+label {
+  display: flex;
+  margin-left: 2em;
+}

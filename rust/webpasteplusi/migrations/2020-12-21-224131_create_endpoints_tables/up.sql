@@ -2,17 +2,20 @@ CREATE TABLE IF NOT EXISTS end_points (
     id SERIAL PRIMARY KEY,
     date_added TIMESTAMP NOT NULL DEFAULT NOW(),
     list_type CHAR NOT NULL DEFAULT 'd',
-    sid TEXT,
+    href TEXT DEFAULT '',
+    sid INT,
     CONSTRAINT sid
         FOREIGN KEY(sid)
-            REFERENCES sub_domains(hostname)
+            REFERENCES sub_domains(id)
             ON DELETE CASCADE
     );
 
 CREATE TABLE IF NOT EXISTS end_point (
     id SERIAL PRIMARY KEY,
     value TEXT,
-    params TEXT,
+    href TEXT DEFAULT '',
+    path_href TEXT DEFAULT '',
+    link_from TEXT DEFAULT '',
     hitcount INT NOT NULL,
     eid INT,
     CONSTRAINT eid
@@ -23,6 +26,7 @@ CREATE TABLE IF NOT EXISTS end_point (
 CREATE TABLE IF NOT EXISTS params (
     id SERIAL PRIMARY KEY,
     key TEXT,
-    value TEXT,
+    value TEXT DEFAULT '',
+
     epid int REFERENCES end_point(id)
 )

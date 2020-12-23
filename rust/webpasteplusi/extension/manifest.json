@@ -3,7 +3,8 @@
   "name": "WebPastePlusI",
   "version": "0.0",
 
-  "permissions": ["<all_urls>", "tabs", "background", "activeTab", "storage"],
+  "permissions": ["<all_urls>", "tabs", "background", "activeTab", "storage", "commands"],
+
 
   "background": {
     "scripts": ["background.js"],
@@ -17,5 +18,40 @@
   "options_ui": {
     "page": "options.html",
     "open_in_tab": true
+  },
+
+  "commands": {
+    "1": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+1",
+        "mac": "Command+Shift+Y"
+      },
+      "description": "Toggle feature foo"
+    },
+
+    "2": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+2",
+        "mac": "Command+Shift+Y"
+      },
+      "description": "Toggle feature foo"
+    },
+  
+    "3": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+3",
+        "mac": "Command+Shift+Y"
+      },
+      "description": "Toggle feature foo"
+    },
+ 
+
+    ",": {
+      "suggested_key": {
+        "default": "Ctrl+M",
+        "mac": "Command+Shift+Y"
+      },
+      "description": "Toggle feature foo"
+    }
   }
 }

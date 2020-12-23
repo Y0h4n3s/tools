@@ -89,19 +89,24 @@ function updateDisplay(data) {
   data["configs"]["executables"].forEach(element => {
     let extractor = dp.parseFromString(`
     <div class="executable">
-      <label for="extractor-name-ipt">Extractor Name: </label>
+      <p class="extractor-name-text text">Extractor Name: </p>
       <input type="text" class="extractor-name-ipt ipt" name="extractor-name-ipt" value="${element.executableName}" disabled>
+      <p class="extractor-endpointpath-text text">Endpoint Path: </p>
       <input type="text" class="extractor-endpointpath-ipt ipt" name="extractor-endpointpath-ipt" value="${element.endpointPath}" disabled>
       <input type="hidden" name="extractor-id-ipt" class="extractor-id-ipt ipt" value="${element.executableId}" disabled>
-      <textarea name="extractor-code-textarea textarea" id="extractor-code" cols="30" rows="10" placeholder=\`${element.executableCode}\` disabled></textarea>
-      <lable for="live-checker" disabled>Live</lable>
-      <input type="checkbox" name="live-checker" id="live-check" class="live-check checkbox" ${element.isLiveExecution ? "checked" : ""} disabled>
-      <textarea name="nonlive-code-textarea textarea" id="nonlive-code-textarea" style="display:${element.isLiveExecution ? "none" : "inline-block"}" cols="30" rows="10" placeholder="${element.executableCodeAfter}" disabled></textarea>
+      <p class="extractor-code-text text">Executable Code: </p>
+      <textarea name="extractor-code-textarea textarea" id="extractor-code" cols="110" rows="15" readonly></textarea>
+      <div class="live-check-container">
+        <lable for="live-checker" disabled>Live</lable>
+        <input type="checkbox" name="live-checker" id="live-check" class="live-check checkbox" ${element.isLiveExecution ? "checked" : ""} disabled>
+      </div>
+      <textarea name="nonlive-code-textarea textarea" id="nonlive-code-textarea" style="display:${element.isLiveExecution ? "none" : "inline-block"}" cols="110" rows="15" readonly></textarea>
       <button class="delete-single-btn btn" value="Delete" >Delete </button>
     </div>
   `, "text/html")
 
-
+    extractor.querySelector("#extractor-code").value = element.executableCode
+    extractor.querySelector("#nonlive-code-textarea").value = element.executableCodeAfter
     extractor.querySelector(".delete-single-btn").addEventListener("click", deleteme)
     document.querySelector(".added-options").appendChild(extractor.querySelector(".executable"))
   });
