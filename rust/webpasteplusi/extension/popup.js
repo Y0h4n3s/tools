@@ -3,6 +3,8 @@ const repsInput = document.querySelector('.rept-ipt')
 const timeoutInput = document.querySelector('.timeout-ipt')
 stopAllButton.addEventListener('click', stopButtonClicked);
 
+
+// Populate Popup display
 chrome.storage.local.get(["configs"], result => {
 
   if (result.configs.executables) {
@@ -17,8 +19,8 @@ chrome.storage.local.get(["configs"], result => {
           <input type="checkbox" name="is-live-checkbox" class="is-live-checkbox"> 
         </div>
         <div class="btn-container">
-          <button class="execute-btn btn" value="Save">Go</button>
-          <button class="stop-btn btn" value="Save">Stop</button>
+          <button class="execute-btn btn" value="go">Go</button>
+          <button class="stop-btn btn" value="Stop">Stop</button>
         </div>
       </div>
       `, 'text/html')
@@ -79,11 +81,32 @@ async function stopButtonClicked(e) {
       }
     })
   } else if (e.target.innerHTML == "Stop All") {
-    chrome.runtime.sendMessage({stopAll: true})
+    chrome.runtime.sendMessage({ stopAll: true })
     let buttons = document.querySelectorAll("button");
     buttons.forEach(button => {
-        button.classList.remove("btn-active")
+      button.classList.remove("btn-active")
     })
   }
-  
+
 }
+
+// Display active buttons
+chrome.storage.local.get(['registeredTabs'], result => {
+  if (result.registeredTabs && !result.registeredTabs.entries().next().done) {
+    result.registeredTabs.forEach(element => {
+      chrome.tabs.query({active: true, currentWindow: true}, tab => {
+        if (tab && tab[0]) {
+        let buttons = document.querySelectorAll("button");
+        buttons.forEach(button => {
+          if (button.dataset.executableId == element.executableId && button.value != "Stop" && element.tabId == tab[0].id) {
+            button.classList.add("btn-active")
+            console.log("Adding:", button)
+          }
+        })
+      }
+      })
+      
+
+    })
+  }
+})

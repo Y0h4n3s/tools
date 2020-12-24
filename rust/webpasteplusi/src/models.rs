@@ -96,6 +96,7 @@ pub mod dbmodels {
         pub path_href: Option<String>,
         pub full_path: Option<String>,
         pub path_only: Option<String>,
+        pub endpoint_id: String
     }
 
     #[derive(Deserialize, Debug, Insertable, Associations, PartialEq)]
@@ -124,10 +125,12 @@ pub mod request_models {
     #[derive(Deserialize, Serialize)]
     pub struct HostnameProtocol {
         pub data: Vec<HashMap<String, String>>,
+        pub endpoint_id: String
     }
     #[derive(Deserialize, Serialize)]
     pub struct HostnameMuchData {
         pub data: Vec<MuchData>,
+        pub endpoint_id: String
     }
     #[derive(Deserialize, Debug, Serialize)]
     pub struct MuchData {
@@ -144,6 +147,7 @@ pub mod request_models {
     #[derive(Deserialize, Debug)]
     pub struct HostnameOwnLinks {
         pub data: Vec<OwnLinks>,
+        pub endpoint_id: String
     }
     #[derive(Deserialize, Debug)]
     pub struct OwnLinks {

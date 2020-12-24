@@ -26,8 +26,11 @@ pub mod hostname_types {
         let conn = pool.get().map_err(|e| {
             warn!("Error Getting A Database Connection: {:?}", e);
         }).unwrap();
-        insert_hostname_protocol(payload.deref(), &conn);
-        "".to_string()
+        if insert_hostname_protocol(payload.deref(), &conn) {
+            debug!("Insert Successful");
+            return "Inserted Successfully".to_string();
+    }
+    "Failed To Insert".to_string()
     }
 
     pub async fn hostname_much_data(
@@ -38,8 +41,11 @@ pub mod hostname_types {
         let conn = pool.get().map_err(|e| {
             warn!("Error Getting A Database Connection: {:?}", e);
         }).unwrap();
-        insert_hostname_much_data(payload.deref(), &conn);
-        "".to_string()
+        if insert_hostname_much_data(payload.deref(), &conn) {
+            debug!("Insert Successful");
+            return "Inserted Successfully".to_string();
+        }
+        "Failed To Insert".to_string()
     }
 
     pub async fn hostname_own_links(data: web::Data<AppState>, payload: web::Json<HostnameOwnLinks>) -> String {

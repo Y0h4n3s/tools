@@ -9,5 +9,6 @@ CREATE TABLE IF NOT EXISTS dump_collector (
     path_href TEXT DEFAULT '',
     link_from TEXT DEFAULT '',
     ip TEXT DEFAULT '',
-    port INT DEFAULT 0
+    port INT DEFAULT 0,
+    endpoint_id TEXT NOT NULL
 )

@@ -12,16 +12,41 @@ pub mod db_actors {
     pub fn insert_hostname_protocol(
         data: &HostnameProtocol,
         conn: &PooledConnection<ConnectionManager<PgConnection>>,
-    ) {
-        use schema::sub_domains::dsl::*;
-        let data_json = serde_json::to_string(&data.data).unwrap();
+    ) -> bool {
+        use crate::schema::dump_collector::dsl::*;
+        let my_endpoint_id = &data.endpoint_id;
+        for hostproto in &data.data {
+            let insertable_data = DumpCollector {
+                hostname: Option::from(hostproto["hostname"].clone()),
+                href: None,
+                ip: None,
+                protocol: Option::from(hostproto["protocol"].clone()),
+                port: None,
+                full_params: None,
+                link_from: None,
+                path_href: None,
+                full_path: None,
+                path_only: None,
+                endpoint_id: my_endpoint_id.clone()
+            };
+            insert_into(dump_collector)
+                .values(&insertable_data)
+                .execute(conn)
+                .map_err(|e| {
+                warn!("Error Inserting Data To Dump: {:?}", e);
+                    return false
+                }).unwrap();
+        }
+        true
+
     }
 
     pub fn insert_hostname_much_data(
         data: &HostnameMuchData,
         conn: &PooledConnection<ConnectionManager<PgConnection>>,
-    ) {
-        use schema::sub_domains::dsl::*;
+    ) -> bool {
+        use crate::schema::dump_collector::dsl::*;
+        let my_endpoint_id = &data.endpoint_id;
         let data_json = serde_json::to_string(&data.data).unwrap();
         let much_data = serde_json::from_str::<Vec<MuchData>>(&data_json).unwrap();
         debug!("Extracted Data: {:?}", much_data);
@@ -40,17 +65,18 @@ pub mod db_actors {
                 link_from: Option::from(single.page_from),
                 path_href: Option::from(single.full_path),
                 full_path: None,
-                path_only: Option::from(single.path_only)
+                path_only: Option::from(single.path_only),
+                endpoint_id: my_endpoint_id.clone()
             };
-            use crate::schema::dump_collector::dsl::*;
+
             insert_into(dump_collector)
                 .values(&insertable_data)
                 .execute(conn).map_err(|e| {
-                warn!("Error Inserting Data To Dump: {:?}", insertable_data)
+                warn!("Error Inserting Data To Dump: {:?}", insertable_data);
+                return false
             }).unwrap();
-
-
         }
+        true
     }
 
     pub(crate) fn check_sub_exists(

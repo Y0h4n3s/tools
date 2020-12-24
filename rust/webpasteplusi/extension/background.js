@@ -2,12 +2,12 @@
 
 chrome.runtime.onInstalled.addListener(details => {
 
-  /* chrome.storage.local.set({ registeredTabs: [] }, () => {
+   chrome.storage.local.set({ registeredTabs: [] }, () => {
     chrome.storage.local.set({ configs: {} }, () => {
       console.log("Installed Succesfully")
 
     })
-  }) */
+  }) 
 
 })
 
@@ -43,7 +43,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         runLive(response.tabId, response.executableId)
       }
     })
-  //runTillStop(server, executable, timeout);
 })
 
 chrome.tabs.onUpdated.addListener((tabid, change, tab) => {
@@ -163,20 +162,74 @@ async function stopMe(tabid, executableId) {
     })
   })
 }
+
+async function jumpMe(tabid, executableId) {
+  return new Promise(resolve => {
+    chrome.storage.local.get(['registeredTabs'], result => {
+      if (!result.registeredTabs || result.registeredTabs.entries().next().done) resolve(false)
+      result.registeredTabs.forEach(element => {
+        if (element.tabId == tabid && element.executableId == executableId && element.previousState.wasSuccess && element.previousState.previousHref == element.previousState.href) {
+          resolve(true)
+        }
+      });
+      resolve(false)
+    })
+  })
+}
 async function runTillReps(tabid, executableId, endpointPath, reps, timeout) {
 
   chrome.storage.local.get(['configs'], async result => {
     if (result.configs.executables) {
       let executableCode = result.configs.executables.filter(n => n.executableId == executableId)[0].executableCode;
       let executableCodeAfter = result.configs.executables.filter(n => n.executableId == executableId)[0].executableCodeAfter;
+      let server = result.configs.server
       for (let i = 0; i < reps && !await stopMe(tabid, executableId); i++) {
-        await execute(tabid, executableCode, result.configs.server, endpointPath, timeout, executableCodeAfter).catch(err => console.log(err))
+        await looper(tabid, executableCode,executableId, server, endpointPath, timeout, executableCodeAfter)
       }
     }
   })
-
 }
+async function looper(tabid, executableCode, executableId, server, endpointPath, timeout, executableCodeAfter) {
+  return new Promise(async resolve => {
+    await jumpMe(tabid, executableId).then(async jump => {
+      if (jump) {
+        await updateState(tabid, executableId, jump).then(async r => {
+        await sleep(timeout * 1000)
+          resolve(false)
+        })
+      } else {
+        await execute(tabid, executableCode, server, endpointPath, timeout, executableCodeAfter).then(async success => {
+          await updateState(tabid, executableId, success).then(r => {
+            resolve(true)
+          })
+        })
+      }
+    })
+  })
+}
+async function updateState(tabid, executableId, success) {
+  return new Promise(resolve => {
+    chrome.storage.local.get(['registeredTabs'], async result => {
+      if (result.registeredTabs && !result.registeredTabs.entries().next().done) {
+        result.registeredTabs.forEach(async element => {
+          if (element.tabId == tabid && element.executableId == executableId) {
+            chrome.tabs.executeScript(tabid, { code: "[document.location.href]" }, resultt => {
+              element.previousState = { previousHref: element.previousState.href, href: resultt[0][0], wasSuccess: success }
+              chrome.storage.local.set({ registeredTabs: result.registeredTabs }, () => console.log("State Updated"))
+              resolve(true)
+            })
 
+          } 
+          
+
+        })
+
+      } else {
+        resolve(false)
+      }
+    })
+  })
+}
 
 async function registerTab(server, executableCode, executableCodeAfter, executableId, executableName, endpointPath, isLiveExecution, sleeptime, reps) {
 
@@ -193,6 +246,7 @@ async function registerTab(server, executableCode, executableCodeAfter, executab
             executableName: executableName,
             endpointPath: endpointPath,
             executableCodeAfter: executableCodeAfter,
+            previousState: { previousHref: "", href: "", wasSuccess: false },
             reps: reps,
             sleepTime: sleeptime,
             tabId: tabid,
@@ -201,7 +255,7 @@ async function registerTab(server, executableCode, executableCodeAfter, executab
             isLiveActive: false
 
           }
-          if (result.registeredTabs.entries().next().done) {
+          if (result.registeredTabs && result.registeredTabs.entries().next().done) {
 
             chrome.storage.local.set(
               {
@@ -244,6 +298,7 @@ async function execute(tabid, executable, server, path, sleepTime, nextExecutabl
           if (result != undefined) {
             console.log("Found Result: ", result)
             try {
+
               fetch(server + path, {
                 method: "POST",
                 mode: "cors",
@@ -251,24 +306,23 @@ async function execute(tabid, executable, server, path, sleepTime, nextExecutabl
                   "Content-Type": "application/json"
                 },
                 body: JSON.stringify({
-                  "data": result[0]
+                  "data": result[0],
+                  "endpoint_id": btoa(path)
                 })
               }).then(async response => {
-                if (nextExecutable == null)
-                  resolve(sleep(sleepTime * 1000))
+                if (nextExecutable == null) {
+                  await sleep(sleepTime * 1000)
+                  resolve(true)
+                }
                 else {
-                  chrome.tabs.executeScript(tabid, {code: nextExecutable}, result => {
-                    resolve(sleep(sleepTime * 1000))
+                  chrome.tabs.executeScript(tabid, { code: nextExecutable }, async result => {
+                    await sleep(sleepTime * 1000)
+                    resolve(true)
                   })
                 }
               }).catch(async err => {
-                if (nextExecutable == null)
-                  resolve(sleep(sleepTime * 1000))
-                else {
-                  chrome.tabs.executeScript(tabid, {code: nextExecutable}, result => {
-                    resolve(sleep(sleepTime * 1000))
-                  })
-                }
+                await sleep(sleepTime * 1000)
+                resolve(false)
               })
             } catch (err) {
               console.log(err)
@@ -279,6 +333,7 @@ async function execute(tabid, executable, server, path, sleepTime, nextExecutabl
     })
   })
 }
+
 
 async function sleep(millis) {
   console.log("Sleeping for:", millis)
@@ -296,27 +351,31 @@ async function clearRegisteredTabs(e = null) {
 
 // Shortcut Listener
 
-chrome.commands.onCommand.addListener((command, tab) => {
-
-  chrome.storage.local.get(['configs'], result => {
-    if (command == ",") {
-      if (!result.configs.executables || result['configs'].executables.entries().next().done) {
-        return
-      } else {
-        result.configs.executables.forEach(element => {
-          execute(tab[0].id, element.executableCode, result.configs.server, element.endpointPath, 0)
-        })
-      }
-    } else if (
-      command == "1" ||
-      command == "2" ||
-      command == "3"
-    ) {
-      result.configs.executables.forEach(element => {
-        if (element.executableId == command) {
-          execute(tab[0].id, element.executableCode, result.configs.server, element.endpointPath, 0)
+chrome.commands.onCommand.addListener((command) => {
+  chrome.tabs.query({ active: true, currentWindow: true }, tab => {
+    if (tab != undefined) {
+      chrome.storage.local.get(['configs'], result => {
+        if (command == ",") {
+          if (!result.configs.executables || result['configs'].executables.entries().next().done) {
+            return
+          } else {
+            result.configs.executables.forEach(element => {
+              execute(tab[0].id, element.executableCode, result.configs.server, element.endpointPath, 0)
+            })
+          }
+        } else if (
+          command == "1" ||
+          command == "2" ||
+          command == "3"
+        ) {
+          result.configs.executables.forEach(element => {
+            if (element.executableId == command) {
+              execute(tab[0].id, element.executableCode, result.configs.server, element.endpointPath, 0)
+            }
+          })
         }
       })
     }
   })
+
 })

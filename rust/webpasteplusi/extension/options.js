@@ -19,7 +19,7 @@ function toggleLiveMode(e) {
   badoNonLiveCodeArea.disabled = e.target.checked
 }
 
-
+//TODO disallow adding already existing configs
 saveButton.addEventListener("click", e => {
   let server = serverInput.value
   let executableName = badoNameInput.value

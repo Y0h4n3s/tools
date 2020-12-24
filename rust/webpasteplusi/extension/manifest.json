@@ -3,7 +3,7 @@
   "name": "WebPastePlusI",
   "version": "0.0",
 
-  "permissions": ["<all_urls>", "tabs", "background", "activeTab", "storage", "commands"],
+  "permissions": ["<all_urls>", "<URL>", "tabs", "background", "activeTab", "storage", "commands"],
 
 
   "background": {
