@@ -1,0 +1,19 @@
+[package]
+name = "organizer"
+version = "0.1.0"
+authors = ["Y0h4n3s <yohaksa80@gmail.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+
+[dependencies]
+consumer = {path = "../consumer"}
+diesel = {version = "1.4.5", features = ["postgres", "r2d2"]}
+serde = "1.0"
+serde_derive = "1.0"
+serde_json = "1.0"
+log = "0.4"
+pretty_env_logger = "0.3"
+dotenv = "0.15.0"
+base64 = "0.13"

@@ -1,7 +1,6 @@
-use super::models::dbmodels::*;
-use super::models::request_models::*;
-use super::schema;
-use super::helpers::parsers::*;
+use crate::models::dbmodels::*;
+use crate::models::request_models::*;
+use crate::schema;
 use diesel::r2d2::*;
 use diesel::PgConnection;
 use diesel::*;
@@ -9,24 +8,24 @@ use diesel::*;
 pub mod db_actors {
     use super::*;
 
-    pub fn insert_hostname_protocol(
-        data: &HostnameProtocol,
+    pub fn insert_hostname_own_links(
+        data: &HostnameOwnLinks,
         conn: &PooledConnection<ConnectionManager<PgConnection>>,
     ) -> bool {
         use crate::schema::dump_collector::dsl::*;
         let my_endpoint_id = &data.endpoint_id;
-        for hostproto in &data.data {
+        for own_links in &data.data {
             let insertable_data = DumpCollector {
-                hostname: Option::from(hostproto["hostname"].clone()),
-                href: None,
+                hostname: Option::from(own_links.hostname.clone()),
+                href: Option::from(own_links.full_link.clone()),
                 ip: None,
-                protocol: Option::from(hostproto["protocol"].clone()),
-                port: None,
-                full_params: None,
-                link_from: None,
+                protocol: Option::from(own_links.protocol.clone()),
+                port: Option::from(own_links.port.clone()),
+                full_params: Option::from(own_links.params.clone()),
+                link_from: Option::from(own_links.extracted_from.clone()),
                 path_href: None,
                 full_path: None,
-                path_only: None,
+                path_only: Option::from(own_links.path_only.clone()),
                 endpoint_id: my_endpoint_id.clone()
             };
             insert_into(dump_collector)
@@ -49,11 +48,7 @@ pub mod db_actors {
         let my_endpoint_id = &data.endpoint_id;
         let data_json = serde_json::to_string(&data.data).unwrap();
         let much_data = serde_json::from_str::<Vec<MuchData>>(&data_json).unwrap();
-        debug!("Extracted Data: {:?}", much_data);
-        let mut subs: Vec<SubDomainsInsert> = Vec::new();
-        let mut endpss: Vec<EndPointsInsert> = Vec::new();
-        let mut endps: Vec<EndPointInsert> = Vec::new();
-        let mut paramss: Vec<Vec<ParamsInsert>> = Vec::new();
+        //debug!("Extracted Data: {:?}", much_data);
         for single in much_data {
             let insertable_data = DumpCollector {
                 hostname: Option::from(single.hostname),
@@ -79,15 +74,6 @@ pub mod db_actors {
         true
     }
 
-    pub(crate) fn check_sub_exists(
-        sub: &SubDomains,
-        port: i32,
-        protocol: &String,
-        conn: &PooledConnection<ConnectionManager<PgConnection>>
-    ) -> (bool, i32) {
 
-
-        (true, 2)
-    }
 
 }

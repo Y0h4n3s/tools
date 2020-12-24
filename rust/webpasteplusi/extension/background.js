@@ -53,7 +53,6 @@ chrome.tabs.onUpdated.addListener((tabid, change, tab) => {
       if (result.registeredTabs && !result.registeredTabs.entries().next().done) {
         result.registeredTabs.forEach(async element => {
           if (element.isLiveExecution && element.isLiveActive && element.tabId == tabid) {
-            console.log("Going Live On:", tabid)
             await execute(tabid, element.executableCode, element.server, element.endpointPath, 0)
           }
         })
@@ -183,9 +182,14 @@ async function runTillReps(tabid, executableId, endpointPath, reps, timeout) {
       let executableCode = result.configs.executables.filter(n => n.executableId == executableId)[0].executableCode;
       let executableCodeAfter = result.configs.executables.filter(n => n.executableId == executableId)[0].executableCodeAfter;
       let server = result.configs.server
-      for (let i = 0; i < reps && !await stopMe(tabid, executableId); i++) {
-        await looper(tabid, executableCode,executableId, server, endpointPath, timeout, executableCodeAfter)
+      try {
+        for (let i = 0; i < reps && !await stopMe(tabid, executableId); i++) {
+          await looper(tabid, executableCode,executableId, server, endpointPath, timeout, executableCodeAfter)
+        }
+      } catch (error) {
+        console.log(error)
       }
+      unregisterTab({tabid: tabid, executableId: executableId, isLiveActive: false})
     }
   })
 }

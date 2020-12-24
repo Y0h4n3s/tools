@@ -99,7 +99,15 @@ chrome.storage.local.get(['registeredTabs'], result => {
         let buttons = document.querySelectorAll("button");
         buttons.forEach(button => {
           if (button.dataset.executableId == element.executableId && button.value != "Stop" && element.tabId == tab[0].id) {
-            button.classList.add("btn-active")
+            if (element.isLiveExecution) {
+              if (element.isLiveActive) {
+                button.classList.add("btn-active")
+              }
+            }
+            else {
+              button.classList.add("btn-active")
+            }
+            
             console.log("Adding:", button)
           }
         })

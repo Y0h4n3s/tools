@@ -4,7 +4,6 @@ author: me
 about: does stuff
 subcommands:
   - consume:
-      short: s
       about: Start The Server And Feed Me
       args:
         - address:
@@ -12,17 +11,25 @@ subcommands:
             long: bind-address
             help: Address To Bind To
             takes_value: true
-        - nofile:
-            short: n
-            long: no-file
-            help: Don't Save To Files
         - dbcreds:
             short: d
             long: db-connection
             help: Database Connection Info
             takes_value: true
+  - organize:
+      about: Organize Collected Data
+      args:
+        - nofile:
+            short: n
+            long: no-file
+            help: Don't Save To Files
         - filepath:
             short: f
             long: save-path
             takes_value: true
             help: Defaults To The Current Path
+        - dbcreds:
+            short: d
+            long: db-connection
+            help: Database Connection Info
+            takes_value: true

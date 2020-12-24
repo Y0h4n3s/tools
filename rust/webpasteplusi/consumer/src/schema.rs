@@ -1,12 +1,4 @@
 table! {
-    dns_names (id) {
-        id -> Int4,
-        a -> Nullable<Text>,
-        mx -> Nullable<Text>,
-    }
-}
-
-table! {
     dump_collector (id) {
         id -> Int4,
         hostname -> Nullable<Text>,
@@ -19,6 +11,7 @@ table! {
         link_from -> Nullable<Text>,
         ip -> Nullable<Text>,
         port -> Nullable<Int4>,
+        endpoint_id -> Text,
     }
 }
 
@@ -30,6 +23,7 @@ table! {
         path_href -> Nullable<Text>,
         link_from -> Nullable<Text>,
         hitcount -> Int4,
+        params -> Nullable<Text>,
         eid -> Nullable<Int4>,
     }
 }
@@ -41,15 +35,6 @@ table! {
         list_type -> Bpchar,
         href -> Nullable<Text>,
         sid -> Nullable<Int4>,
-    }
-}
-
-table! {
-    params (id) {
-        id -> Int4,
-        key -> Nullable<Text>,
-        value -> Nullable<Text>,
-        epid -> Nullable<Int4>,
     }
 }
 
@@ -69,13 +54,10 @@ table! {
 
 joinable!(end_point -> end_points (eid));
 joinable!(end_points -> sub_domains (sid));
-joinable!(params -> end_point (epid));
 
 allow_tables_to_appear_in_same_query!(
-    dns_names,
     dump_collector,
     end_point,
     end_points,
-    params,
     sub_domains,
 );

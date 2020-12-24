@@ -1,5 +1,0 @@
-CREATE TABLE IF NOT EXISTS dns_names(
-    id SERIAL PRIMARY KEY,
-    a TEXT,
-    mx TEXT
-)

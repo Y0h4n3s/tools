@@ -1,16 +1,12 @@
 [package]
-name = "webpasteplusi"
+name = "consumer"
 version = "0.1.0"
 authors = ["Y0h4n3s <yohaksa80@gmail.com>"]
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-[workspace]
-members = ["consumer", "organizer"]
 
 [dependencies]
-consumer = {path = "consumer"}
-organizer = {path = "organizer"}
 hyper = "0.13.9"
 tokio = { version = "0.2", features = ["full"] }
 futures = "0.3"

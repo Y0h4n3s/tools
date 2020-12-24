@@ -22,12 +22,12 @@ if (result[2] == domain) {
     path_only = link.match(/.?([a-z][a-z0-9+\-.]*:(\/\/[^/?#]+)?)?(\/?[a-z0-9\-._~%!$&'()*+,;=@]+(\/[a-z0-9\-._~%!$&'()*+,;=:@]+)*\/?|\/)([#?]|$)/)[3] || "";   
     param = link.match(/^[^?#]+\?([^#]+)/)? link.match(/^[^?#]+\?([^#]+)/)[1] : "";
     
-temp.push({port: port, protocol: document.location.protocol, hostname: document.domain, path_only: path_only, params: param, full_link: result[2]});
+temp.push({port: port, protocol: document.location.protocol, hostname: document.domain, path_only: path_only, params: param, full_link: result[2], extracted_from: document.location.href});
 }
 });
 [...document.querySelectorAll('*')].map(n => n.outerHTML.match(/.?(?:\b)(href|src)=(["'`](([/.]([^?'`"]*)\?)([^"'`]*))).?/)).forEach(a => {
     if (a != null) {
-       temp.push({port: port, protocol: document.location.protocol, hostname: document.domain, path_only: "/" + (a[5]? a[5]: ""), params: a[6] ? a[6] : "", full_link: document.location.origin + "/" + (a[3]? a[3] : "")})
+       temp.push({port: port, protocol: document.location.protocol, hostname: document.domain, path_only: "/" + (a[5]? a[5]: ""), params: a[6] ? a[6] : "", full_link: document.location.origin + "/" + (a[3]? a[3] : ""), extracted_from: document.location.href})
 
     }
 });
@@ -40,7 +40,7 @@ if (result[2] == domain) {
     path_only = link.match(/.?([a-z][a-z0-9+\-.]*:(\/\/[^/?#]+)?)?(\/?[a-z0-9\-._~%!$&'()*+,;=@]+(\/[a-z0-9\-._~%!$&'()*+,;=:@]+)*\/?|\/)([#?]|$)/)? link.match(/.?([a-z][a-z0-9+\-.]*:(\/\/[^/?#]+)?)?(\/?[a-z0-9\-._~%!$&'()*+,;=@]+(\/[a-z0-9\-._~%!$&'()*+,;=:@]+)*\/?|\/)([#?]|$)/)[3] : "";   
     param = link.match(/^[^?#]+\?([^#]+)/)? link.match(/^[^?#]+\?([^#]+)/)[1] : "";
     
-temp.push({port: port, protocol: document.location.protocol, hostname: document.domain, path_only: path_only, params: param, full_link: result[2]});
+temp.push({port: port, protocol: document.location.protocol, hostname: document.domain, path_only: path_only, params: param, full_link: result[2], extracted_from: document.location.href});
 }}
 });
 exists = false;
