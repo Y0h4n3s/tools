@@ -30,8 +30,8 @@ pub fn organize(app_config: AppState) {
             organize_much_data(conn);
         }
         Err(_) => {
-            warn!("Error Getting A Database Connection");
-            warn!("Exiting...");
+            error!("Error Getting A Database Connection");
+            error!("Exiting...");
             exit(1);
         }
     }

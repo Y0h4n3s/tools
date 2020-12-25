@@ -20,9 +20,10 @@ table! {
         id -> Int4,
         value -> Nullable<Text>,
         href -> Nullable<Text>,
-        path_href -> Nullable<Text>,
+        path_only -> Nullable<Text>,
         link_from -> Nullable<Text>,
         hitcount -> Int4,
+        full_path -> Nullable<Text>,
         params -> Nullable<Text>,
         eid -> Nullable<Int4>,
     }
@@ -34,6 +35,8 @@ table! {
         date_added -> Timestamp,
         list_type -> Bpchar,
         href -> Nullable<Text>,
+        port -> Nullable<Int4>,
+        protocol -> Nullable<Text>,
         sid -> Nullable<Int4>,
     }
 }

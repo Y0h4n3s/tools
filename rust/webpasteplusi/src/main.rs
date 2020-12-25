@@ -3,11 +3,10 @@
 #[macro_use] extern crate clap;
 #[macro_use] extern crate diesel;
 #[macro_use] extern crate log;
-extern crate pretty_env_logger;
 #[macro_use] extern crate serde_derive;
+extern crate pretty_env_logger;
 
 use dotenv::dotenv;
-use consumer::*;
 use consumer::handlers::AppState;
 use std::fs::File;
 use std::net::SocketAddr;
@@ -20,7 +19,6 @@ struct Config {
     address: SocketAddr,
     dbcreds: String
 }
-
 
 
  fn main() {
@@ -41,15 +39,13 @@ struct Config {
                 .map_err(|err| io::Error::new(io::ErrorKind::Other, err))
         })
         .map_err(|err| {
-            warn!("Can't read config file: {}", err);
+            debug!("Couldn't read config file: {}", err);
         })
         .ok();
 
-
-
-
-    match matches.subcommand_name() {
-        Some("consume") => {
+    match matches.subcommand() {
+        ("consume", consume_matches) => {
+            let consume_matches = consume_matches.unwrap();
             let addr = matches.value_of("address")
                 .map(|s| s.to_owned())
                 .or(env::var("SERVER_ADDRESS").ok())
@@ -59,43 +55,49 @@ struct Config {
                 .unwrap();
 
 
-            let dbcreds = matches.value_of("dbcreds")
+            let dbcreds = consume_matches.value_of("dbcreds")
                 .map(|s| s.to_owned())
                 .or(dotenv::var("DATABASE_URL").ok())
                 .and_then(|dbcreds| dbcreds.parse().ok())
-                .or_else(||Some("".to_string()));
+                .or_else(||Some("".to_string())).unwrap();
+
+            let mut rootdomain = None;
+            if consume_matches.value_of("rootdomain").is_some() {
+                rootdomain = Option::from(consume_matches.value_of("rootdomain").unwrap().to_string());
+                debug!("Root Domain Selected: {}", &rootdomain.clone().unwrap());
+            }
 
             let app_config = AppState {
                 address: addr.to_string(),
-                dbcreds: dbcreds.unwrap(),
-                no_file: matches.is_present("no-file")
+                dbcreds: dbcreds.clone(),
+                root_domain: rootdomain,
+                no_file: consume_matches.is_present("no-file")
             };
-
             consumer::start_consuming(app_config);
 
         },
-        Some("organize") => {
+        ("organize", organize_commands) => {
+            let organize_commands = organize_commands.unwrap();
             let dbcreds = matches.value_of("dbcreds")
                 .map(|s| s.to_owned())
                 .or(dotenv::var("DATABASE_URL").ok())
                 .and_then(|dbcreds| dbcreds.parse().ok())
-                .or_else(||Some("".to_string()));
+                .or_else(||Some("".to_string())).unwrap();
 
             let app_config = organizer::AppState {
-                db_creds: dbcreds.unwrap_or("".to_string()),
-                file_path: matches.value_of("filepath").unwrap_or("").to_string(),
-                no_file: matches.is_present("no-file")
+                db_creds: dbcreds,
+                file_path: organize_commands.value_of("filepath").unwrap_or("").to_string(),
+                no_file: organize_commands.is_present("no-file")
             };
 
             organizer::organize(app_config);
+
         },
-        None => info!("Choose One Subcommand To Continue"),
+        _ => {
+            info!("Choose One Subcommand To Continue {}", matches.usage());
+        },
         _ => unimplemented!()
     }
-
-    // A `Service` is needed for every connection, so this
-    // creates one from our `hello_world` function.
-
 
 
 }

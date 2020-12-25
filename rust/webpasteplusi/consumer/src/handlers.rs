@@ -27,7 +27,7 @@ pub mod hostname_types {
         let conn = pool.get().map_err(|e| {
             warn!("Error Getting A Database Connection: {:?}", e);
         }).unwrap();
-        if insert_hostname_own_links(payload.deref(), &conn) {
+        if insert_hostname_own_links(payload.deref(), &conn, data.root_domain.clone()) {
             debug!("Insert Successful");
             return "Inserted Successfully".to_string();
     }
@@ -42,7 +42,7 @@ pub mod hostname_types {
         let conn = pool.get().map_err(|e| {
             warn!("Error Getting A Database Connection: {:?}", e);
         }).unwrap();
-        if insert_hostname_much_data(payload.deref(), &conn) {
+        if insert_hostname_much_data(payload.deref(), &conn, data.root_domain.clone()) {
             debug!("Insert Successful");
             return "Inserted Successfully".to_string();
         }
@@ -66,6 +66,7 @@ pub mod hostname_types {
 pub struct AppState {
     pub address: String,
     pub dbcreds: String,
+    pub root_domain: Option<String>,
     pub no_file: bool,
 
 }

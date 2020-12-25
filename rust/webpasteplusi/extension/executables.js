@@ -21,8 +21,8 @@ links.forEach(link => {
 if (result[2] == domain) {
     path_only = link.match(/.?([a-z][a-z0-9+\-.]*:(\/\/[^/?#]+)?)?(\/?[a-z0-9\-._~%!$&'()*+,;=@]+(\/[a-z0-9\-._~%!$&'()*+,;=:@]+)*\/?|\/)([#?]|$)/)[3] || "";   
     param = link.match(/^[^?#]+\?([^#]+)/)? link.match(/^[^?#]+\?([^#]+)/)[1] : "";
-    
-temp.push({port: port, protocol: document.location.protocol, hostname: document.domain, path_only: path_only, params: param, full_link: result[2], extracted_from: document.location.href});
+
+temp.push({port: port, protocol: document.location.protocol, hostname: document.domain, path_only: path_only, params: param, full_link: result.input, extracted_from: document.location.href});
 }
 });
 [...document.querySelectorAll('*')].map(n => n.outerHTML.match(/.?(?:\b)(href|src)=(["'`](([/.]([^?'`"]*)\?)([^"'`]*))).?/)).forEach(a => {
@@ -37,24 +37,23 @@ links.forEach(link => {
 if (link != null ) {
     result = link.match(/.?[a-z][a-z0-9+\-.]*:\/\/([a-z0-9\-._~%!$&'()*+,;=]+@)?([a-z0-9\-._~%]+|\[[a-z0-9\-._~%!$&'()*+,;=:]+\])/)
 if (result[2] == domain) {
-    path_only = link.match(/.?([a-z][a-z0-9+\-.]*:(\/\/[^/?#]+)?)?(\/?[a-z0-9\-._~%!$&'()*+,;=@]+(\/[a-z0-9\-._~%!$&'()*+,;=:@]+)*\/?|\/)([#?]|$)/)? link.match(/.?([a-z][a-z0-9+\-.]*:(\/\/[^/?#]+)?)?(\/?[a-z0-9\-._~%!$&'()*+,;=@]+(\/[a-z0-9\-._~%!$&'()*+,;=:@]+)*\/?|\/)([#?]|$)/)[3] : "";   
+    path_only = link.match(/.?([a-z][a-z0-9+\-.]*:(\/\/[^/?#]+)?)?(\/?[a-z0-9\-._~%!$&'()*+,;=@]+(\/[a-z0-9\-._~%!$&'()*+,;=:@]+)*\/?|\/)([#?]|$)/)? link.match(/.?([a-z][a-z0-9+\-.]*:(\/\/[^/?#]+)?)?(\/?[a-z0-9\-._~%!$&'()*+,;=@]+(\/[a-z0-9\-._~%!$&'()*+,;=:@]+)*\/?|\/)([#?]|$)/)[3] : "";
     param = link.match(/^[^?#]+\?([^#]+)/)? link.match(/^[^?#]+\?([^#]+)/)[1] : "";
-    
+
 temp.push({port: port, protocol: document.location.protocol, hostname: document.domain, path_only: path_only, params: param, full_link: result[2], extracted_from: document.location.href});
 }}
 });
 exists = false;
 for (let p = 0; p < temp.length; p++) {
     for (let m = 0; m < data.length; m++) {
-        if (data[m].hostname == temp[p].hostname && 
-data[m].protocol == temp[p].protocol && 
-data[m].full_link == temp[p].full_link && 
-data[m].path_only == temp[p].path_only&& 
+        if (data[m].hostname == temp[p].hostname &&
+data[m].protocol == temp[p].protocol &&
+data[m].full_link == temp[p].full_link &&
+data[m].path_only == temp[p].path_only&&
 data[m].params == temp[p].params) {exists = true;break}
     }
 if (!exists) {data.push(temp[p]);}exists = false;}
 data
-
 
 //  ==================================================Too Much Data ========================================================
 data = [];

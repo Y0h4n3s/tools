@@ -51,10 +51,9 @@ pub async fn start_consuming(app_config: AppState) -> std::io::Result<()> {
     let manager = r2d2::ConnectionManager::<PgConnection>::new(&app_config.dbcreds);
     let pool = r2d2::Pool::builder().build(manager).map_err(|e| {
         warn!("Failed To Connect To The Database: {:?}",e);
-        if app_config.no_file {
             debug!("Exiting...");
             exit(1);
-        }
+
     }).unwrap();
 
     // Run this server for... forever!
