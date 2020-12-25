@@ -5,6 +5,7 @@ extern crate pretty_env_logger;
 #[macro_use] extern crate clap;
 #[macro_use] extern crate serde_derive;
 #[macro_use] extern crate diesel;
+#[macro_use] extern crate diesel_migrations;
 
 use std::{env, io};
 use std::convert::Infallible;
@@ -31,7 +32,7 @@ pub mod schema;
 mod helpers;
 use dotenv::dotenv;
 use crate::handlers::{hostname_types, index, AppState};
-
+use diesel_migrations::*;
 fn main() {
     dotenv().ok();
     pretty_env_logger::init();
@@ -55,7 +56,8 @@ pub async fn start_consuming(app_config: AppState) -> std::io::Result<()> {
             exit(1);
 
     }).unwrap();
-
+    embed_migrations!();
+    embedded_migrations::run(&pool.get().unwrap());
     // Run this server for... forever!
     debug!("Listening For Requests on {:?} ...", &app_config.address);
     let address = app_config.address.clone();

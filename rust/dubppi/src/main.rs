@@ -13,7 +13,7 @@ use std::net::SocketAddr;
 use std::{io, env};
 use std::io::Read;
 use clap::App;
-
+use env_logger::{Builder, Target};
 #[derive(Deserialize)]
 struct Config {
     address: SocketAddr,
@@ -23,12 +23,14 @@ struct Config {
 
  fn main() {
     dotenv().ok();
-    pretty_env_logger::init();
+     log::logger();
+     let mut logger_builder = pretty_env_logger::formatted_builder();
+     logger_builder.target(Target::Stdout);
+     logger_builder.init();
+     let yaml = load_yaml!("cli.yml");
+     let matches = App::from_yaml(yaml).get_matches();
 
-    let yaml = load_yaml!("cli.yml");
-    let matches = App::from_yaml(yaml).get_matches();
-
-    let config = File::open("service.toml")
+     let config = File::open("service.toml")
         .and_then(|mut file| {
             let mut buffer = String::new();
             file.read_to_string(&mut buffer)?;

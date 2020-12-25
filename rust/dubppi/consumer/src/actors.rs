@@ -40,7 +40,8 @@ pub mod db_actors {
                     .values(&insertable_data)
                     .execute(conn)
                     .map_err(|e| {
-                        warn!("Error Inserting Data To Dump: {:?}", e);
+                        warn!("Error Inserting Data To Dump: {:?}", insertable_data);
+                        warn!("Error: {:?}", e);
                         return false
                     }).unwrap();
             }
@@ -84,6 +85,7 @@ pub mod db_actors {
                     .values(&insertable_data)
                     .execute(conn).map_err(|e| {
                     warn!("Error Inserting Data To Dump: {:?}", insertable_data);
+                    warn!("Error: {:?}", e);
                     return false
                 }).unwrap();
             }

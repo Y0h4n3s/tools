@@ -21,6 +21,11 @@ subcommands:
             long: root-domain
             help: Regex To Match By Hostname For Filtering While Consuming Data
             takes_value: true
+        - verbose:
+            short: v
+            long: verbose
+            help: Increase Verbosity
+            takes_value: false
   - organize:
       about: Organize Collected Data
       args:
@@ -38,3 +43,8 @@ subcommands:
             long: db-connection
             help: Database Connection Info
             takes_value: true
+        - verbose:
+            short: v
+            long: verbose
+            help: Increase Verbosity
+            takes_value: false

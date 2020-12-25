@@ -2,6 +2,7 @@
 
 #[macro_use] extern crate diesel;
 #[macro_use] extern crate log;
+#[macro_use] extern crate diesel_migrations;
 extern crate pretty_env_logger;
 mod models;
 mod helpers;
@@ -26,6 +27,8 @@ pub fn organize(app_config: AppState) {
     match conn.check_connect(&app_config.db_creds) {
         Ok(_) => {
             let conn = conn.connect(&app_config.db_creds);
+            embed_migrations!();
+            embedded_migrations::run(conn.get_connection());
             debug!("Organizing Much Data Endpoint");
             organize_much_data(conn);
         }
