@@ -66,7 +66,7 @@ struct Config {
                 rootdomain = Option::from(consume_matches.value_of("rootdomain").unwrap().to_string());
                 debug!("Root Domain Selected: {}", &rootdomain.clone().unwrap());
             }
-
+            debug!("Database Url: {}", dbcreds);
             let app_config = AppState {
                 address: addr.to_string(),
                 dbcreds: dbcreds.clone(),

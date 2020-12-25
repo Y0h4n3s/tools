@@ -80,3 +80,43 @@ data[m].params == temp[p].params) {exists = true;break}
 if (!exists) {data.push(temp[p]);}exists = false}
 data
 
+// ============================================================ Much Data Improved =============================================================
+
+data = [];
+temp = [];
+[...document.querySelectorAll('*')].map(n => n.outerHTML.match(/.?((?:(https?|wss|ftp|ssh|smtp|rsync|git|file):?)\/\/([\w\-.]+))(([^\s\n\b"?#<']*)([?#;][^\n\b\s]*)?).?/)).forEach(a => {
+    if (a != null) {
+port = a[0].match(/.?(?:http?|wss|ssh|ftp|file)*:\/\/([a-z0-9\-._~%!$&'()*+,;=]+@)?([a-z0-9\-._~%]+|\[[a-z0-9\-._~%!$&'()*+,;=:]+\]):([0-9]+)/);
+port = port != null ? port[3] : (a[2] == "http" ? 80 : 443);
+       temp.push({full_link: a[0], link_only: a[1], protocol: a[2] || "",port: port, hostname: a[3] || "", full_path: a[4] || "", path_only: a[5] || "", params: a[6] || "", page_from: document.location.href})
+    }
+});
+
+[...document.querySelectorAll("[href]")].map(n => n.href.match(/.?((?:(https?|wss|ftp|ssh|smtp|rsync|git|file):?)\/\/([\w\-.]+))(([^\s\n\b"?#<']*)([?#;][^\n\b\s]*)?).?/)).forEach(a => {
+    if (a != null) {
+port = a[0].match(/.?(?:http?|wss|ssh|ftp|file)*:\/\/([a-z0-9\-._~%!$&'()*+,;=]+@)?([a-z0-9\-._~%]+|\[[a-z0-9\-._~%!$&'()*+,;=:]+\]):([0-9]+)/);
+port = port != null ? port[3] : (a[2] == "http" ? 80 : 443);
+       temp.push({full_link: a[0], link_only: a[1], protocol: a[2] || "",port: port, hostname: a[3] || "", full_path: a[4] || "", path_only: a[5] || "", params: a[6] || "", page_from: document.location.href})
+    }
+});
+
+[...document.querySelectorAll("[src]")].map(n => n.src.match(/.?((?:(https?|wss|ftp|ssh|smtp|rsync|git|file):?)\/\/([\w\-.]+))(([^\s\n\b"?#<']*)([?#;][^\n\b\s]*)?).?/)).forEach(a => {
+    if (a != null) {
+port = a[0].match(/.?(?:http?|wss|ssh|ftp|file)*:\/\/([a-z0-9\-._~%!$&'()*+,;=]+@)?([a-z0-9\-._~%]+|\[[a-z0-9\-._~%!$&'()*+,;=:]+\]):([0-9]+)/);
+port = port != null ? port[3] : (a[2] == "http" ? 80 : 443);
+       temp.push({full_link: a[0], link_only: a[1], protocol: a[2] || "",port: port, hostname: a[3] || "", full_path: a[4] || "", path_only: a[5] || "", params: a[6] || "", page_from: document.location.href})
+    }
+})
+exists = false;
+for (let p = 0; p < temp.length; p++) {
+    for (let m = 0; m < data.length; m++) {
+        if (data[m].hostname == temp[p].hostname &&
+data[m].protocol == temp[p].protocol &&
+data[m].full_link == temp[p].full_link &&
+data[m].link_only == temp[p].link_only &&
+data[m].full_path == temp[p].full_path &&
+data[m].path_only == temp[p].path_only&&
+data[m].params == temp[p].params) {exists = true;break}
+    }
+if (!exists) {data.push(temp[p]);}exists = false}
+data

@@ -9,7 +9,7 @@ pub mod parsers {
     pub fn extract_origin(href: &str) -> String {
         let matcher = regex::Regex::new("((?:https?|ftp|file|ssh)://[^/]*)").expect("Error Parsing Origin Extraction Regex");
         let matches = matcher.captures(href).expect("Error Capturing Matches");
-        info!("Origin Is: {}", matches[1].to_string());
+        //info!("Origin Is: {}", matches[1].to_string());
         matches[1].to_string()
     }
     }
