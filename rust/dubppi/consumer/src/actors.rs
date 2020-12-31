@@ -8,9 +8,82 @@ use diesel::*;
 
 pub mod db_actors {
     use super::*;
+    use futures::TryStreamExt;
+
+    pub fn insert_dom_xss_sources(
+        data: &DomXssSources,
+        conn: &PooledConnection<ConnectionManager<PgConnection>>
+    ) -> bool{
+        use crate::schema::dump_collector::dsl::*;
+
+        let my_endpoint_id = &data.endpoint_id;
+        for sink in &data.data {
+
+            let insertable_data = DumpCollector {
+                hostname: Option::from(sink.hostname.clone()),
+                href: None,
+                ip: None,
+                protocol: None,
+                port: None,
+                full_params: Option::from(sink.source.clone()),
+                link_from: Option::from(sink.link_from.clone()),
+                path_href: None,
+                full_path: None,
+                path_only: None,
+                endpoint_id: "".to_string()
+            };
+            insert_into(dump_collector)
+                .values(&insertable_data)
+                .execute(conn)
+                .map_err(|e| {
+                    warn!("Error Inserting Data To Dump: {:?}", insertable_data);
+                    warn!("Error: {:?}", e);
+                    return false
+                }).unwrap();
+        }
+
+        true
+    }
+
+
+    pub fn insert_dom_xss_sinks(
+        data: &DomXssSinks,
+        conn: &PooledConnection<ConnectionManager<PgConnection>>
+    ) -> bool{
+        use crate::schema::dump_collector::dsl::*;
+
+        let my_endpoint_id = &data.endpoint_id;
+        for sink in &data.data {
+
+            let insertable_data = DumpCollector {
+                hostname: Option::from(sink.hostname.clone()),
+                href: None,
+                ip: None,
+                protocol: None,
+                port: None,
+                full_params: None,
+                link_from: Option::from(sink.link_from.clone()),
+                path_href: None,
+                full_path: Option::from(sink.sink.clone()),
+                path_only: None,
+                endpoint_id: "".to_string()
+            };
+            insert_into(dump_collector)
+                .values(&insertable_data)
+                .execute(conn)
+                .map_err(|e| {
+                    warn!("Error Inserting Data To Dump: {:?}", insertable_data);
+                    warn!("Error: {:?}", e);
+                    return false
+                }).unwrap();
+        }
+
+        true
+    }
+
 
     pub fn insert_hostname_own_links(
-        data: &HostnameOwnLinks,
+        data: &DomOwnLinks,
         conn: &PooledConnection<ConnectionManager<PgConnection>>,
         root_domain: Option<String>
     ) -> bool {
@@ -51,7 +124,7 @@ pub mod db_actors {
     }
 
     pub fn insert_hostname_much_data(
-        data: &HostnameMuchData,
+        data: &DomMuchData,
         conn: &PooledConnection<ConnectionManager<PgConnection>>,
         root_domain: Option<String>
     ) -> bool {

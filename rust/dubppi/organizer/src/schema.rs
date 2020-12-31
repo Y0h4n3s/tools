@@ -1,4 +1,30 @@
 table! {
+    config (id) {
+        id -> Int4,
+        key -> Text,
+        value -> Nullable<Text>,
+    }
+}
+
+table! {
+    configs (id) {
+        id -> Int4,
+        key -> Text,
+        value -> Nullable<Text>,
+    }
+}
+
+table! {
+    dom_xss (id) {
+        id -> Int4,
+        kind -> Text,
+        link_from -> Nullable<Text>,
+        hostname -> Nullable<Text>,
+        value -> Text,
+    }
+}
+
+table! {
     dump_collector (id) {
         id -> Int4,
         hostname -> Nullable<Text>,
@@ -59,6 +85,9 @@ joinable!(end_point -> end_points (eid));
 joinable!(end_points -> sub_domains (sid));
 
 allow_tables_to_appear_in_same_query!(
+    config,
+    configs,
+    dom_xss,
     dump_collector,
     end_point,
     end_points,

@@ -28,13 +28,38 @@ pub mod dbmodels {
 
 pub mod request_models {
     use super::*;
+
+    #[derive(Deserialize, Serialize)]
+    pub struct DomXssSink {
+        pub hostname: String,
+        pub link_from: String,
+        pub sink: String,
+    }
+    #[derive(Deserialize, Serialize)]
+    pub struct DomXssSinks {
+        pub data: Vec<DomXssSink>,
+        pub endpoint_id: String,
+    }
+
+    #[derive(Deserialize, Serialize)]
+    pub struct DomXssSource {
+        pub hostname: String,
+        pub link_from: String,
+        pub source: String,
+    }
+    #[derive(Deserialize, Serialize)]
+    pub struct DomXssSources {
+        pub data: Vec<DomXssSource>,
+        pub endpoint_id: String,
+    }
+
     #[derive(Deserialize, Serialize)]
     pub struct HostnameProtocol {
         pub data: Vec<HashMap<String, String>>,
         pub endpoint_id: String
     }
     #[derive(Deserialize, Serialize)]
-    pub struct HostnameMuchData {
+    pub struct DomMuchData {
         pub data: Vec<MuchData>,
         pub endpoint_id: String
     }
@@ -51,7 +76,7 @@ pub mod request_models {
         pub page_from: String,
     }
     #[derive(Deserialize, Debug)]
-    pub struct HostnameOwnLinks {
+    pub struct DomOwnLinks {
         pub data: Vec<OwnLinks>,
         pub endpoint_id: String
     }

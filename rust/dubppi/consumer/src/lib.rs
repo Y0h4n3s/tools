@@ -31,7 +31,7 @@ pub mod models;
 pub mod schema;
 mod helpers;
 use dotenv::dotenv;
-use crate::handlers::{hostname_types, index, AppState};
+use crate::handlers::{dom_types, index, AppState};
 use diesel_migrations::*;
 fn main() {
     dotenv().ok();
@@ -68,13 +68,15 @@ pub async fn start_consuming(app_config: AppState) -> std::io::Result<()> {
             .data(pool.clone())
             .data(app_config.clone())
             .service(
-                web::scope("/hostname")
+                web::scope("/dom")
                     .app_data(json_config)
-                    .route("/hostname_protocol", web::post().to(hostname_types::hostname_protocol))
-                    .route("/hostname_hrefs", web::post().to(hostname_types::hostname_hrefs))
-                    .route("/hostname_ip", web::post().to(hostname_types::hostname_ip))
-                    .route("/hostname_much_data", web::post().to(hostname_types::hostname_much_data))
-                    .route("/hostname_own_links", web::post().to(hostname_types::hostname_own_links))
+                    .route("/hostname_protocol", web::post().to(dom_types::hostname_protocol))
+                    .route("/hostname_hrefs", web::post().to(dom_types::hostname_hrefs))
+                    .route("/hostname_ip", web::post().to(dom_types::hostname_ip))
+                    .route("/much_data", web::post().to(dom_types::dom_much_data))
+                    .route("/own_links", web::post().to(dom_types::dom_own_links))
+                    .route("/dom_xss_sinks", web::post().to(dom_types::dom_xss_sinks))
+                    .route("/dom_xss_sources", web::post().to(dom_types::dom_xss_sources))
             )
             .route("/", web::get().to(index))
 

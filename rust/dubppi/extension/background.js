@@ -2,12 +2,12 @@
 
 chrome.runtime.onInstalled.addListener(details => {
 
-   chrome.storage.local.set({ registeredTabs: [] }, () => {
+  chrome.storage.local.set({ registeredTabs: [] }, () => {
     chrome.storage.local.set({ configs: {} }, () => {
       console.log("Installed Succesfully")
 
     })
-  }) 
+  })
 
 })
 
@@ -53,7 +53,11 @@ chrome.tabs.onUpdated.addListener((tabid, change, tab) => {
       if (result.registeredTabs && !result.registeredTabs.entries().next().done) {
         result.registeredTabs.forEach(async element => {
           if (element.isLiveExecution && element.isLiveActive && element.tabId == tabid) {
-            await execute(tabid, element.executableCode, element.server, element.endpointPath, 0)
+            chrome.storage.local.get(['configs'], async result => {
+              if (result.server) {
+                await execute(tabid, element.executableCode, result.server, element.endpointPath, 0)
+              }
+            })
           }
         })
       }
@@ -184,12 +188,12 @@ async function runTillReps(tabid, executableId, endpointPath, reps, timeout) {
       let server = result.configs.server
       try {
         for (let i = 0; i < reps && !await stopMe(tabid, executableId); i++) {
-          await looper(tabid, executableCode,executableId, server, endpointPath, timeout, executableCodeAfter)
+          await looper(tabid, executableCode, executableId, server, endpointPath, timeout, executableCodeAfter)
         }
       } catch (error) {
         console.log(error)
       }
-      unregisterTab({tabid: tabid, executableId: executableId, isLiveActive: false})
+      unregisterTab({ tabid: tabid, executableId: executableId, isLiveActive: false })
     }
   })
 }
@@ -198,7 +202,7 @@ async function looper(tabid, executableCode, executableId, server, endpointPath,
     await jumpMe(tabid, executableId).then(async jump => {
       if (jump) {
         await updateState(tabid, executableId, jump).then(async r => {
-        await sleep(timeout * 1000)
+          await sleep(timeout * 1000)
           resolve(false)
         })
       } else {
@@ -223,8 +227,8 @@ async function updateState(tabid, executableId, success) {
               resolve(true)
             })
 
-          } 
-          
+          }
+
 
         })
 

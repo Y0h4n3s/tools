@@ -38,3 +38,17 @@ CREATE TABLE IF NOT EXISTS end_point (
         FOREIGN KEY(eid)
             REFERENCES end_points(id)
 );
+
+CREATE TABLE IF NOT EXISTS dom_xss (
+    id SERIAL PRIMARY KEY,
+    kind TEXT NOT NULL,
+    link_from TEXT DEFAULT '',
+    hostname TEXT DEFAULT '',
+    value TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS configs (
+    id SERIAL PRIMARY KEY,
+    key TEXT NOT NULL,
+    value TEXT DEFAULT ''
+);

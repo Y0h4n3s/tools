@@ -1,19 +1,29 @@
 #![allow(unused)]
 
-#[macro_use] extern crate clap;
-#[macro_use] extern crate diesel;
-#[macro_use] extern crate log;
-#[macro_use] extern crate serde_derive;
+#[macro_use]
+extern crate clap;
+#[macro_use]
+extern crate diesel;
+#[macro_use]
+extern crate diesel_migrations;
+#[macro_use]
+extern crate log;
+#[macro_use]
 extern crate pretty_env_logger;
+#[macro_use]
+extern crate serde_derive;
 
-use dotenv::dotenv;
-use consumer::handlers::AppState;
+use std::{env, io};
 use std::fs::File;
-use std::net::SocketAddr;
-use std::{io, env};
 use std::io::Read;
+use std::net::SocketAddr;
+
 use clap::App;
+use dotenv::dotenv;
 use env_logger::{Builder, Target};
+
+use consumer::handlers::AppState;
+
 #[derive(Deserialize)]
 struct Config {
     address: SocketAddr,
@@ -22,11 +32,9 @@ struct Config {
 
 
  fn main() {
-    dotenv().ok();
+     dotenv().ok();
      log::logger();
-     let mut logger_builder = pretty_env_logger::formatted_builder();
-     logger_builder.target(Target::Stdout);
-     logger_builder.init();
+     pretty_env_logger::init();
      let yaml = load_yaml!("cli.yml");
      let matches = App::from_yaml(yaml).get_matches();
 
@@ -80,11 +88,13 @@ struct Config {
         },
         ("organize", organize_commands) => {
             let organize_commands = organize_commands.unwrap();
-            let dbcreds = matches.value_of("dbcreds")
+            let dbcreds = organize_commands.value_of("dbcreds")
                 .map(|s| s.to_owned())
                 .or(dotenv::var("DATABASE_URL").ok())
                 .and_then(|dbcreds| dbcreds.parse().ok())
                 .or_else(||Some("".to_string())).unwrap();
+
+            debug!("Database Url: {}", dbcreds);
 
             let app_config = organizer::AppState {
                 db_creds: dbcreds,

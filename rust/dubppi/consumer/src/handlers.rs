@@ -5,7 +5,7 @@ use futures::{Future, future, Stream};
 use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use crate::models::request_models::*;
 use crate::actors::db_actors::*;
-use diesel::r2d2::ConnectionManager;
+use diesel::r2d2::{ConnectionManager, PooledConnection};
 
 type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
@@ -15,18 +15,43 @@ pub async fn index() -> String {
 }
 
 
-pub mod hostname_types {
+pub mod dom_types {
     use super::*;
     use std::ops::Deref;
+    use diesel::r2d2::PooledConnection;
 
-    pub async fn hostname_own_links(
+    pub async fn dom_xss_sinks(
         data: web::Data<AppState>,
         pool: web::Data<DbPool>,
-        payload: web::Json<HostnameOwnLinks>)
+        payload: web::Json<DomXssSinks>
+    ) -> String {
+        let conn = get_conn(&pool);
+        if insert_dom_xss_sinks(payload.deref(), &conn,) {
+            debug!("Insert Successful");
+            return "Inserted Successfully".to_string();
+        }
+        "Failed To Insert".to_string()
+    }
+
+    pub async fn dom_xss_sources(
+        data: web::Data<AppState>,
+        pool: web::Data<DbPool>,
+        payload: web::Json<DomXssSources>
+    ) -> String {
+        let conn = get_conn(&pool);
+        if insert_dom_xss_sources(payload.deref(), &conn,) {
+            debug!("Insert Successful");
+            return "Inserted Successfully".to_string();
+        }
+        "Failed To Insert".to_string()
+    }
+
+    pub async fn dom_own_links(
+        data: web::Data<AppState>,
+        pool: web::Data<DbPool>,
+        payload: web::Json<DomOwnLinks>)
         -> String {
-        let conn = pool.get().map_err(|e| {
-            warn!("Error Getting A Database Connection: {:?}", e);
-        }).unwrap();
+        let conn = get_conn(&pool);
         if insert_hostname_own_links(payload.deref(), &conn, data.root_domain.clone()) {
             debug!("Insert Successful");
             return "Inserted Successfully".to_string();
@@ -34,14 +59,12 @@ pub mod hostname_types {
     "Failed To Insert".to_string()
     }
 
-    pub async fn hostname_much_data(
+    pub async fn dom_much_data(
         data: web::Data<AppState>,
         pool: web::Data<DbPool>,
-        payload: web::Json<HostnameMuchData>)
+        payload: web::Json<DomMuchData>)
         -> String {
-        let conn = pool.get().map_err(|e| {
-            warn!("Error Getting A Database Connection: {:?}", e);
-        }).unwrap();
+        let conn= get_conn(&pool);
         if insert_hostname_much_data(payload.deref(), &conn, data.root_domain.clone()) {
             debug!("Insert Successful");
             return "Inserted Successfully".to_string();
@@ -59,6 +82,15 @@ pub mod hostname_types {
     pub async fn hostname_hrefs(data: web::Data<AppState>) -> String   {
         unimplemented!()
     }
+
+
+    fn get_conn(pool: &web::Data<DbPool>) -> PooledConnection<ConnectionManager<PgConnection>> {
+        let conn = pool.get().map_err(|e| {
+            warn!("Error Getting A Database Connection: {:?}", e);
+        }).unwrap();
+        conn
+    }
+
 }
 
 

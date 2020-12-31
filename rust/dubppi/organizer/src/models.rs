@@ -77,6 +77,30 @@ pub struct EndPointInsert {
     pub eid: i32,
 }
 
+#[derive(Insertable, Debug, Deserialize)]
+#[table_name = "dom_xss"]
+pub struct DomXssInsert {
+    pub kind: String,
+    pub link_from: String,
+    pub hostname: String,
+    pub value: String,
+}
+
+#[derive(Deserialize, Queryable, Debug)]
+pub struct Configs {
+    pub id: i32,
+    pub key: String,
+    pub value: Option<String>
+}
+
+#[derive(Deserialize, Insertable, Debug)]
+#[table_name = "configs"]
+pub struct ConfigsInsert {
+    pub key: String,
+    pub value: Option<String>
+}
+
+
 #[derive(Deserialize, Debug, PartialEq, Queryable)]
 pub struct DumpCollector {
     pub id: i32,
@@ -84,9 +108,9 @@ pub struct DumpCollector {
     pub full_path: Option<String>, // The path with the params included
     pub protocol: Option<String>,
     pub path_only: Option<String>, // Just the path without the parametes included
-    pub full_params: Option<String>, // Just The Params without the path included
+    pub full_params: Option<String>, // Just The Params without the path included, source for domxss
     pub href: Option<String>,   // where the info is extracted from if any
-    pub path_href: Option<String>,  // Exactly like full_path: reserve for future use
+    pub path_href: Option<String>,  // Exactly like full_path: reserve for future use, sink for domxss
     pub link_from: Option<String>,  // Page where info was extracted
     pub ip: Option<String>,
     pub port: Option<i32>,
