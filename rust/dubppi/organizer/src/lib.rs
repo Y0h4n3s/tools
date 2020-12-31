@@ -35,7 +35,7 @@ pub fn organize(app_config: AppState) {
     embed_migrations!();
     embedded_migrations::run(&conn.get_connection());
     debug!("Organizing...");
-        organize_dom_xss(&conn.get_connection());
+    organize_dom_xss(&conn.get_connection());
 
     organize_much_data(&conn);
     organize_own_links(&conn);
