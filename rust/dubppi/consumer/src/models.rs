@@ -29,13 +29,13 @@ pub mod dbmodels {
 pub mod request_models {
     use super::*;
 
-    #[derive(Deserialize, Serialize)]
+    #[derive(Deserialize, Serialize, Debug)]
     pub struct DomXssSink {
         pub hostname: String,
         pub link_from: String,
         pub sink: String,
     }
-    #[derive(Deserialize, Serialize)]
+    #[derive(Deserialize, Serialize, Debug)]
     pub struct DomXssSinks {
         pub data: Vec<DomXssSink>,
         pub endpoint_id: String,

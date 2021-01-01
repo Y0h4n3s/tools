@@ -26,6 +26,7 @@ pub mod dom_types {
         payload: web::Json<DomXssSinks>
     ) -> String {
         let conn = get_conn(&pool);
+        debug!("Payload: {:?}", payload.deref());
         if insert_dom_xss_sinks(payload.deref(), &conn,) {
             debug!("Insert Successful");
             return "Inserted Successfully".to_string();

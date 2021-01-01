@@ -165,10 +165,9 @@ fn insert_much_data_endpoints (data: &DumpCollector, subid: &i32, conn: &PgConne
 fn insert_much_data_endpoint(data: &DumpCollector, epsid: &i32, conn: &PgConnection) {
     use crate::schema::end_point::dsl::*;
     let val = encode(
-        format!("{}{}{}{}{}",
+        format!("{}{}{}{}",
                 parsers::extract_origin(&data.href.as_ref().unwrap_or(&"".to_string())),
                 &data.path_only.clone().unwrap_or("".to_string()),
-                &data.link_from.clone().unwrap_or("".to_string()),
                 &data.full_path.clone().unwrap_or("".to_string()),
                 &data.full_params.clone().unwrap_or("".to_string()),
         ));
@@ -329,10 +328,9 @@ fn insert_own_links_endpoint(dump: &DumpCollector, conn: &PgConnection, epsid: i
     let mut ful =  dump.path_only.clone().unwrap_or("".to_string());
     ful.push_str(&dump.full_params.clone().unwrap_or("".to_string()));
     let val = encode(
-        format!("{}{}{}{}{}",
+        format!("{}{}{}{}",
                 parsers::extract_origin(&dump.href.as_ref().unwrap_or(&"".to_string())),
                 &dump.path_only.clone().unwrap_or("".to_string()),
-                &dump.link_from.clone().unwrap_or("".to_string()),
                 ful.clone(),
                 &dump.full_params.clone().unwrap_or("".to_string()),
         ));
