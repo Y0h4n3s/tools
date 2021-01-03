@@ -121,9 +121,15 @@ struct Config {
                 rootdomain = Option::from(recon_commands.value_of("rootdomain").unwrap().to_string());
                 debug!("Root Domain Selected: {}", &rootdomain.clone().unwrap());
             }
+
+            let asynccount = match recon_commands.value_of("asyncconns") {
+                Some(val) => val.to_string().parse::<i32>().unwrap_or(5),
+                None => 5
+            };
             let app_config = recon::AppConfig {
                 dbcreds: dbcreds,
-                root_domain: rootdomain
+                root_domain: rootdomain,
+                async_conns: asynccount
             };
             recon::start_workers(app_config).await;
         }

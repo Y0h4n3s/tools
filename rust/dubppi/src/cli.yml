@@ -61,3 +61,8 @@ subcommands:
             long: root-domain
             help: Regex To Match By Hostname For Filtering While Consuming Data
             takes_value: true
+        - asyncconns:
+            short: a
+            long: async-connections
+            help: The Number Of Async Connections To Make At Once
+            takes_value: true

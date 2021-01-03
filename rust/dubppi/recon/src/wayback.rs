@@ -59,7 +59,7 @@ impl WayBackUrls {
                                 }
                             }
                         })
-                        .buffered(self.wayback_config.async_conns);
+                        .buffered(self.wayback_config.async_conns as usize);
                 debug!("Wayback Data: {:?}", &wayback_data);
 
                 wayback_data.for_each(|res| async {
@@ -106,7 +106,7 @@ impl ResponseHandler for WayBackUrls {
 #[derive(Clone, Debug)]
 pub struct WaybackConfig {
     pub dbcreds: String,
-    pub async_conns: usize,
+    pub async_conns: i32,
     pub root_domain: String,
 }
 
@@ -114,7 +114,7 @@ impl From<AppConfig> for WaybackConfig {
     fn from(app_config: AppConfig) -> Self {
         WaybackConfig {
             dbcreds: app_config.dbcreds,
-            async_conns: 5,
+            async_conns: app_config.async_conns,
             root_domain: app_config.root_domain.unwrap_or(".".to_string())
         }
     }

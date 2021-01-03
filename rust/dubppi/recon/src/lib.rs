@@ -4,6 +4,7 @@ extern crate pretty_env_logger;
 mod thread_pool;
 mod models;
 mod wayback;
+mod commoncrawl;
 
 use std::fs::File;
 use std::thread;
@@ -20,6 +21,8 @@ use std::sync::{Mutex, Arc};
 use diesel::prelude::*;
 use futures::StreamExt;
 use serde_json;
+use crate::commoncrawl::{CommonCrawlUrls, CommonCrawlConfig};
+
 pub fn main() {
     dotenv().ok();
     pretty_env_logger::init();
@@ -36,13 +39,16 @@ pub async fn start_workers(app_config: AppConfig) {
     let manager =
         r2d2::ConnectionManager::<PgConnection>::new(&app_config.dbcreds);
     let pool = Arc::new(Mutex::new(r2d2::Pool::new(manager).unwrap()));
-    let wayback_config = WaybackConfig::from(app_config);
+    let wayback_config = WaybackConfig::from(app_config.clone());
+    let commoncrawl_config = CommonCrawlConfig::from(app_config.clone());
     let work = tokio::spawn(async move {
         let wayback_worker =
             WayBackUrls::new(Arc::clone(&pool).lock().unwrap().clone(), wayback_config);
-        let wayback = tokio::spawn(async move {let result = wayback_worker.start().await;});
-
-        wayback.await;
+        //let wayback = tokio::spawn(async move {let result = wayback_worker.start().await;});
+        let commoncrawl_worker = CommonCrawlUrls::new(Arc::clone(&pool).lock().unwrap().clone(), commoncrawl_config);
+        let commoncrawl = tokio::spawn(async move {let result = commoncrawl_worker.start().await;});
+        //wayback.await;
+        commoncrawl.await;
     });
 
     work.await;
@@ -53,7 +59,8 @@ pub async fn start_workers(app_config: AppConfig) {
 #[derive(Clone, Debug)]
 pub struct AppConfig {
     pub dbcreds: String,
-    pub root_domain: Option<String>
+    pub root_domain: Option<String>,
+    pub async_conns: i32
 }
 
 
