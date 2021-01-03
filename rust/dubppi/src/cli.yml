@@ -56,3 +56,8 @@ subcommands:
             long: db-connection
             help: Database Connection Info
             takes_value: true
+        - rootdomain:
+            short: r
+            long: root-domain
+            help: Regex To Match By Hostname For Filtering While Consuming Data
+            takes_value: true

@@ -115,8 +115,15 @@ struct Config {
                 .or(dotenv::var("DATABASE_URL").ok())
                 .and_then(|dbcreds| dbcreds.parse().ok())
                 .or_else(||Some("".to_string())).unwrap();
+
+            let mut rootdomain = None;
+            if recon_commands.value_of("rootdomain").is_some() {
+                rootdomain = Option::from(recon_commands.value_of("rootdomain").unwrap().to_string());
+                debug!("Root Domain Selected: {}", &rootdomain.clone().unwrap());
+            }
             let app_config = recon::AppConfig {
-                dbcreds: dbcreds
+                dbcreds: dbcreds,
+                root_domain: rootdomain
             };
             recon::start_workers(app_config).await;
         }

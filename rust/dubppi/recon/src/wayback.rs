@@ -12,6 +12,8 @@ use crate::{AppConfig, ResponseHandler};
 use crate::models::WaybackData;
 use consumer::models::request_models::{MuchData, DomMuchData};
 use diesel::query_dsl::InternalJoinDsl;
+use r2d2::PooledConnection;
+use std::process::exit;
 
 #[derive(Clone)]
 pub struct WayBackUrls {
@@ -21,32 +23,43 @@ pub struct WayBackUrls {
 
 impl WayBackUrls {
     pub fn new(pool: Pool<ConnectionManager<PgConnection>>, wayback_config: WaybackConfig) -> WayBackUrls {
-        debug!("Got the pool");
         WayBackUrls { pool: pool, wayback_config }
     }
 
     pub(crate) async fn start(&self) {
-        debug!("getting subs");
         use organizer::schema::sub_domains::dsl::*;
-
-        let subs: std::result::Result<Vec<Option<String>>, diesel::result::Error> = sub_domains.select(hostname)
-            .get_results::<Option<String>>(&self.pool.get().unwrap());
+        let conn = self.pool.get();
+        let conn = match conn {
+            Ok(connection) => {connection}
+            Err(_) => {/* maybe save to file .await*/exit(-1)}
+        };
+        let subs: std::result::Result<Vec<Option<String>>, diesel::result::Error> =
+            sub_domains
+                .select(hostname)
+                .get_results::<Option<String>>(&conn);
 
         match subs {
             Ok(data) => {
-                let subs: Vec<String> = data.into_iter().map(|e| e.unwrap()).collect();
-                debug!("Subs: {:?}", &subs);
+                let subs = data
+                    .into_iter()
+                    .filter(|e| !e.as_ref().unwrap_or(&"".to_string()).eq(""))
+                    .map(|e| e.as_ref().unwrap().clone())
+                    .collect::<Vec<String>>();
+
+                debug!("Scanning The Wayback Machine For: {:?}", &subs);
+
                 let wayback_data =
                     stream::iter(subs)
                         .map(|sub| {
                             async move {
-                                let req = get(&format!("http://web.archive.org/cdx/search/cdx?url=.*{}/*&output=json&collapse=urlkey", sub)).await;
+                                let req = get(&format!("http://web.archive.org/cdx/search/cdx?url=*.{}/*|{}/*|*{}*|{}&output=json&collapse=urlkey", sub, sub, sub, sub)).await;
                                 match req {
                                     Ok(response) => { response.bytes().await }
                                     Err(e) => { /*TODO implement saving failed requests*/ Err(e) }
                                 }
                             }
-                        }).buffered(self.wayback_config.async_conns);
+                        })
+                        .buffered(self.wayback_config.async_conns);
                 debug!("Wayback Data: {:?}", &wayback_data);
 
                 wayback_data.for_each(|res| async {
@@ -55,7 +68,7 @@ impl WayBackUrls {
                             self.handle(data.to_vec())
                         }
                         Err(err) => {
-                            debug!("{:?}", err)
+                            debug!("{:?}", err.to_string())
                         }
                     }
                 }).await;
@@ -82,12 +95,9 @@ impl ResponseHandler for WayBackUrls {
         }).collect();
         let chunk = chunk.join(" ");
         let mut to_insert: Vec<MuchData> = Vec::new();
-        parse_chunk_into_dom_much_data(&chunk);
-        let val = DomMuchData {
-            data: to_insert,
-            endpoint_id: base_64_me("/dom/much_data")
-        };
-        consumer::actors::db_actors::insert_dom_much_data(&val, &self.pool.get().unwrap(), None);
+
+        let val = parse_chunk_into_dom_much_data(&chunk);
+        consumer::actors::db_actors::insert_dom_much_data(&val, &self.pool.get().unwrap(), Option::from(String::from(&self.wayback_config.root_domain.clone())));
         debug!("Inserted :)")
     }
 }
@@ -97,6 +107,7 @@ impl ResponseHandler for WayBackUrls {
 pub struct WaybackConfig {
     pub dbcreds: String,
     pub async_conns: usize,
+    pub root_domain: String,
 }
 
 impl From<AppConfig> for WaybackConfig {
@@ -104,6 +115,7 @@ impl From<AppConfig> for WaybackConfig {
         WaybackConfig {
             dbcreds: app_config.dbcreds,
             async_conns: 5,
+            root_domain: app_config.root_domain.unwrap_or(".".to_string())
         }
     }
 }

@@ -20,18 +20,49 @@ pub mod parsers {
 
     pub fn parse_chunk_into_dom_much_data(href: &str) -> DomMuchData{
         let re =
-            regex::Regex::new(r#".?((?:(https?|wss|ftp|ssh|smtp|rsync|git|file):?)//([\w\-.]+))(([^\s\n"?#<']*)([?#;][^\n\s]*)?).?"#).unwrap();
+            regex::Regex::new(r#".?((?:(https?|wss|ftp|ssh|smtp|rsync|git|file):?)//([\w\-.:@~]+))(([^\s\n"?#<']*)([?#;][^\n\s]*)?).?"#).unwrap();
+        let mut coll = Vec::<MuchData>::new();
         debug!("Blob: {:?}", href);
-        let matches = re.find_iter(href).filter_map(|caps| {
-
+         for caps in re.captures_iter(href) {
+            coll.push(MuchData {
+                full_link: match caps.get(0) {
+                    None => {"".to_string()}
+                    Some(val) => {val.as_str().parse().unwrap_or("".to_string())}
+                },
+                link_only: match caps.get(1) {
+                    None => {"".to_string()}
+                    Some(val) => {val.as_str().parse().unwrap_or("".to_string())}
+                },
+                protocol: match caps.get(2) {
+                    None => {"".to_string()}
+                    Some(val) => {val.as_str().parse().unwrap_or("".to_string())}
+                },
+                port: 0,
+                hostname: match caps.get(3) {
+                    None => {"".to_string()}
+                    Some(val) => {val.as_str().parse().unwrap_or("".to_string())}
+                },
+                full_path: match caps.get(4) {
+                    None => {"".to_string()}
+                    Some(val) => {val.as_str().parse().unwrap_or("".to_string())}
+                },
+                path_only: match caps.get(5) {
+                    None => {"".to_string()}
+                    Some(val) => {val.as_str().parse().unwrap_or("".to_string())}
+                },
+                params: match caps.get(6) {
+                    None => {"".to_string()}
+                    Some(val) => {val.as_str().parse().unwrap_or("".to_string())}
+                },
+                page_from: "wayback".to_string()
+            });
             debug!("Caps: {:?}", caps);
-            Option::from(caps)
 
-        });
+        };
 
         DomMuchData {
-            data: vec![parse_link_into_much_data(href)],
-            endpoint_id: "".to_string()
+            data: coll,
+            endpoint_id: base_64_me("/dom/much_data")
         }
     }
 

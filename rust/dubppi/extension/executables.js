@@ -84,7 +84,7 @@ data
 
 data = [];
 temp = [];
-[...document.querySelectorAll('*')].map(n => n.outerHTML.match(/.?((?:(https?|wss|ftp|ssh|smtp|rsync|git|file):?)\/\/([\w\-.]+))(([^\s\n\b"?#<']*)([?#;][^\n\b\s]*)?).?/)).forEach(a => {
+[...document.querySelectorAll('*')].map(n => n.outerHTML.match(/.?((?:(https?|wss|ftp|ssh|smtp|rsync|git|file):?)\/\/([\w\-.:@~]+))(([^\s\n\b"?#<']*)([?#;][^\n\b\s]*)?).?/)).forEach(a => {
     if (a != null) {
 port = a[0].match(/.?(?:http?|wss|ssh|ftp|file)*:\/\/([a-z0-9\-._~%!$&'()*+,;=]+@)?([a-z0-9\-._~%]+|\[[a-z0-9\-._~%!$&'()*+,;=:]+\]):([0-9]+)/);
 port = port != null ? port[3] : (a[2] == "http" ? 80 : 443);
@@ -92,7 +92,7 @@ port = port != null ? port[3] : (a[2] == "http" ? 80 : 443);
     }
 });
 
-[...document.querySelectorAll("[href]")].map(n => n.href.match(/.?((?:(https?|wss|ftp|ssh|smtp|rsync|git|file):?)\/\/([\w\-.]+))(([^\s\n\b"?#<']*)([?#;][^\n\b\s]*)?).?/)).forEach(a => {
+[...document.querySelectorAll("[href]")].map(n => n.href.match(/.?((?:(https?|wss|ftp|ssh|smtp|rsync|git|file):?)\/\/([\w\-.:@~]+))(([^\s\n\b"?#<']*)([?#;][^\n\b\s]*)?).?/)).forEach(a => {
     if (a != null) {
 port = a[0].match(/.?(?:http?|wss|ssh|ftp|file)*:\/\/([a-z0-9\-._~%!$&'()*+,;=]+@)?([a-z0-9\-._~%]+|\[[a-z0-9\-._~%!$&'()*+,;=:]+\]):([0-9]+)/);
 port = port != null ? port[3] : (a[2] == "http" ? 80 : 443);
@@ -100,7 +100,7 @@ port = port != null ? port[3] : (a[2] == "http" ? 80 : 443);
     }
 });
 
-[...document.querySelectorAll("[src]")].map(n => n.src.match(/.?((?:(https?|wss|ftp|ssh|smtp|rsync|git|file):?)\/\/([\w\-.]+))(([^\s\n\b"?#<']*)([?#;][^\n\b\s]*)?).?/)).forEach(a => {
+[...document.querySelectorAll("[src]")].map(n => n.src.match(/.?((?:(https?|wss|ftp|ssh|smtp|rsync|git|file):?)\/\/([\w\-.:@~]+))(([^\s\n\b"?#<']*)([?#;][^\n\b\s]*)?).?/)).forEach(a => {
     if (a != null) {
 port = a[0].match(/.?(?:http?|wss|ssh|ftp|file)*:\/\/([a-z0-9\-._~%!$&'()*+,;=]+@)?([a-z0-9\-._~%]+|\[[a-z0-9\-._~%!$&'()*+,;=:]+\]):([0-9]+)/);
 port = port != null ? port[3] : (a[2] == "http" ? 80 : 443);

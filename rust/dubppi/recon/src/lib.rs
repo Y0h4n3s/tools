@@ -33,22 +33,27 @@ trait ResponseHandler {
 
 
 pub async fn start_workers(app_config: AppConfig) {
-    let manager = r2d2::ConnectionManager::<PgConnection>::new(&app_config.dbcreds);
+    let manager =
+        r2d2::ConnectionManager::<PgConnection>::new(&app_config.dbcreds);
     let pool = Arc::new(Mutex::new(r2d2::Pool::new(manager).unwrap()));
     let wayback_config = WaybackConfig::from(app_config);
     let work = tokio::spawn(async move {
-        let wayback_worker = WayBackUrls::new(Arc::clone(&pool).lock().unwrap().clone(), wayback_config);
+        let wayback_worker =
+            WayBackUrls::new(Arc::clone(&pool).lock().unwrap().clone(), wayback_config);
         let wayback = tokio::spawn(async move {let result = wayback_worker.start().await;});
+
         wayback.await;
-    }).await;
-    debug!("{:?}", work);
+    });
+
+    work.await;
 }
 
 
 
 #[derive(Clone, Debug)]
 pub struct AppConfig {
-    pub dbcreds: String
+    pub dbcreds: String,
+    pub root_domain: Option<String>
 }
 
 
