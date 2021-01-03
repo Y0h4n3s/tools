@@ -22,6 +22,7 @@ CREATE TABLE IF NOT EXISTS end_points (
         FOREIGN KEY(sid)
             REFERENCES sub_domains(id)
             ON DELETE CASCADE
+            ON UPDATE CASCADE
     );
 
 CREATE TABLE IF NOT EXISTS end_point (
@@ -37,6 +38,8 @@ CREATE TABLE IF NOT EXISTS end_point (
     CONSTRAINT eid
         FOREIGN KEY(eid)
             REFERENCES end_points(id)
+            ON DELETE CASCADE
+            ON UPDATE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS dom_xss (

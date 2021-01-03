@@ -66,7 +66,7 @@ pub mod dom_types {
         payload: web::Json<DomMuchData>)
         -> String {
         let conn= get_conn(&pool);
-        if insert_hostname_much_data(payload.deref(), &conn, data.root_domain.clone()) {
+        if insert_dom_much_data(payload.deref(), &conn, data.root_domain.clone()) {
             debug!("Insert Successful");
             return "Inserted Successfully".to_string();
         }

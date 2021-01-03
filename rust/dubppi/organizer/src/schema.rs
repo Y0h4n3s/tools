@@ -1,12 +1,4 @@
 table! {
-    config (id) {
-        id -> Int4,
-        key -> Text,
-        value -> Nullable<Text>,
-    }
-}
-
-table! {
     configs (id) {
         id -> Int4,
         key -> Text,
@@ -85,7 +77,6 @@ joinable!(end_point -> end_points (eid));
 joinable!(end_points -> sub_domains (sid));
 
 allow_tables_to_appear_in_same_query!(
-    config,
     configs,
     dom_xss,
     dump_collector,

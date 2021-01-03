@@ -123,7 +123,7 @@ pub mod db_actors {
 
     }
 
-    pub fn insert_hostname_much_data(
+    pub fn insert_dom_much_data(
         data: &DomMuchData,
         conn: &PooledConnection<ConnectionManager<PgConnection>>,
         root_domain: Option<String>
@@ -136,7 +136,7 @@ pub mod db_actors {
         let my_endpoint_id = &data.endpoint_id;
         let data_json = serde_json::to_string(&data.data).unwrap();
         let much_data = serde_json::from_str::<Vec<MuchData>>(&data_json).unwrap();
-        //debug!("Extracted Data: {:?}", much_data);
+        debug!("Extracted Data: {:?}", much_data);
         for single in much_data {
             if domain_matches_by_hostname(&single.hostname, &root) {
                 debug!("Domain {} Matches Regex {}", &single.hostname, &root);

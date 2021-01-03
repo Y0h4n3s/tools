@@ -5,3 +5,84 @@ pub mod matchers {
         matcher.is_match(hotname)
     }
 }
+
+pub mod parsers {
+    use crate::models::request_models::{DomMuchData, MuchData};
+    use regex::Match;
+    use base64::encode;
+    pub fn parse_link_into_dom_much_data(href: &str) -> DomMuchData{
+
+        DomMuchData {
+            data: vec![parse_link_into_much_data(href)],
+            endpoint_id: "".to_string()
+        }
+    }
+
+    pub fn parse_chunk_into_dom_much_data(href: &str) -> DomMuchData{
+        let re =
+            regex::Regex::new(r#".?((?:(https?|wss|ftp|ssh|smtp|rsync|git|file):?)//([\w\-.]+))(([^\s\n"?#<']*)([?#;][^\n\s]*)?).?"#).unwrap();
+        debug!("Blob: {:?}", href);
+        let matches = re.find_iter(href).filter_map(|caps| {
+
+            debug!("Caps: {:?}", caps);
+            Option::from(caps)
+
+        });
+
+        DomMuchData {
+            data: vec![parse_link_into_much_data(href)],
+            endpoint_id: "".to_string()
+        }
+    }
+
+    pub fn parse_link_into_much_data(href: &str) -> MuchData {
+        let re =
+            regex::Regex::new(r#".?((?:(https?|wss|ftp|ssh|smtp|rsync|git|file):?)//([\w\-.]+))(([^\s\n"?#<']*)([?#;][^\n\s]*)?).?"#).unwrap();
+        let matches = re.captures(href);
+        match matches {
+            Some(caps) => {
+                //debug!("Caps: {:?}", caps);
+            }
+            None => {}
+        }
+
+        MuchData {
+            full_link: "".to_string(),
+            link_only: "".to_string(),
+            protocol: "".to_string(),
+            port: 0,
+            hostname: "".to_string(),
+            full_path: "".to_string(),
+            path_only: "".to_string(),
+            params: "".to_string(),
+            page_from: "".to_string()
+        }
+    }
+    // not tested
+    pub fn get_port_from_link(href: &str) -> i32 {
+        let port_re = regex::Regex::new(r#".?(?:http?|wss|ssh|ftp|file)*://([a-z0-9\-._~%!$&'()*+,;=]+@)?([a-z0-9\-._~%]+|\[[a-z0-9\-._~%!$&'()*+,;=:]+\]):([0-9]+)"#).unwrap();
+        let port_match = port_re.captures(href).unwrap();
+        let port = match port_match.get(3) {
+            Some(port) => {
+                port.as_str().parse::<i32>().unwrap()
+            }
+            _ => {
+                match port_match.get(2) {
+                    None => {0}
+                    Some(protocol) => {
+                        match protocol.as_str() {
+                            "http" => 80,
+                            "https" => 443,
+                            _ => 0
+                        }
+                    }
+                }
+            }
+        };
+        port
+    }
+
+    pub fn base_64_me(dat: &str) -> String{
+        encode(dat)
+    }
+}

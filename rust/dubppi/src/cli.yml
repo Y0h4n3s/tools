@@ -48,3 +48,11 @@ subcommands:
             long: verbose
             help: Increase Verbosity
             takes_value: false
+  - recon:
+      about: Do My Work For Me
+      args:
+        - dbcreds:
+            short: d
+            long: db-connection
+            help: Database Connection Info
+            takes_value: true

@@ -19,8 +19,8 @@ use consumer::models::EndPoints;
 use crate::helpers::{DbUtils, organize_dom_xss, organize_much_data, organize_own_links, update_last_processed};
 
 mod models;
-mod helpers;
-mod schema;
+pub mod helpers;
+pub mod schema;
 
 pub fn main() {
     dotenv().ok();

@@ -12,7 +12,6 @@ extern crate log;
 extern crate pretty_env_logger;
 #[macro_use]
 extern crate serde_derive;
-
 use std::{env, io};
 use std::fs::File;
 use std::io::Read;
@@ -31,7 +30,9 @@ struct Config {
 }
 
 
- fn main() {
+// this shit fixes everything up
+#[actix_web::main]
+ async fn main() {
      dotenv().ok();
      log::logger();
      pretty_env_logger::init();
@@ -83,7 +84,7 @@ struct Config {
                 root_domain: rootdomain,
                 no_file: consume_matches.is_present("no-file")
             };
-            consumer::start_consuming(app_config);
+            consumer::start_consuming(app_config).await;
 
         },
         ("organize", organize_commands) => {
@@ -105,6 +106,21 @@ struct Config {
             organizer::organize(app_config);
 
         },
+
+        ("recon", recon_commands) => {
+            let recon_commands = recon_commands.unwrap();
+            debug!("Starting Recon Daemon");
+            let dbcreds = recon_commands.value_of("dbcreds")
+                .map(|s| s.to_owned())
+                .or(dotenv::var("DATABASE_URL").ok())
+                .and_then(|dbcreds| dbcreds.parse().ok())
+                .or_else(||Some("".to_string())).unwrap();
+            let app_config = recon::AppConfig {
+                dbcreds: dbcreds
+            };
+            recon::start_workers(app_config).await;
+        }
+
         _ => {
             info!("Choose One Subcommand To Continue {}", matches.usage());
         },

@@ -26,10 +26,11 @@ use serde_derive::Deserialize;
 use serde_json;
 
 pub mod handlers;
-mod actors;
+pub mod actors;
 pub mod models;
 pub mod schema;
-mod helpers;
+pub mod helpers;
+
 use dotenv::dotenv;
 use crate::handlers::{dom_types, index, AppState};
 use diesel_migrations::*;
@@ -46,7 +47,7 @@ mod tests {
 }
 
 
-#[actix_web::main]
+
 pub async fn start_consuming(app_config: AppState) -> std::io::Result<()> {
 
     let manager = r2d2::ConnectionManager::<PgConnection>::new(&app_config.dbcreds);
@@ -61,6 +62,7 @@ pub async fn start_consuming(app_config: AppState) -> std::io::Result<()> {
     // Run this server for... forever!
     debug!("Listening For Requests on {:?} ...", &app_config.address);
     let address = app_config.address.clone();
+
     HttpServer::new(move || {
         let json_config = web::JsonConfig::default().limit(1005535);
         App::new()
