@@ -5,6 +5,7 @@ mod thread_pool;
 mod models;
 mod wayback;
 mod commoncrawl;
+mod amass;
 
 use std::fs::File;
 use std::thread;
@@ -42,6 +43,7 @@ pub async fn start_workers(app_config: AppConfig) {
     let wayback_config = WaybackConfig::from(app_config.clone());
     let commoncrawl_config = CommonCrawlConfig::from(app_config.clone());
     let work = tokio::spawn(async move {
+        let amass_worker = amass::populate_subs(app_config.root_domain.unwrap_or("".to_string()), None, None).await;
         let wayback_worker =
             WayBackUrls::new(Arc::clone(&pool).lock().unwrap().clone(), wayback_config);
         //let wayback = tokio::spawn(async move {let result = wayback_worker.start().await;});
