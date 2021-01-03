@@ -27,6 +27,7 @@ pub mod dom_types {
     ) -> String {
         let conn = get_conn(&pool);
         debug!("Payload: {:?}", payload.deref());
+        println!("[+] Recieving Data At `/dom/dom_xss_sinks`");
         if insert_dom_xss_sinks(payload.deref(), &conn,) {
             debug!("Insert Successful");
             return "Inserted Successfully".to_string();
@@ -40,6 +41,7 @@ pub mod dom_types {
         payload: web::Json<DomXssSources>
     ) -> String {
         let conn = get_conn(&pool);
+        println!("[+] Recieving Data At `/dom/dom_xss_sources`");
         if insert_dom_xss_sources(payload.deref(), &conn,) {
             debug!("Insert Successful");
             return "Inserted Successfully".to_string();
@@ -53,6 +55,7 @@ pub mod dom_types {
         payload: web::Json<DomOwnLinks>)
         -> String {
         let conn = get_conn(&pool);
+        println!("[+] Recieving Data At `/dom/own_links`");
         if insert_hostname_own_links(payload.deref(), &conn, data.root_domain.clone()) {
             debug!("Insert Successful");
             return "Inserted Successfully".to_string();
@@ -66,6 +69,7 @@ pub mod dom_types {
         payload: web::Json<DomMuchData>)
         -> String {
         let conn= get_conn(&pool);
+        println!("[+] Recieving Data At `/dom/much_data`");
         if insert_dom_much_data(payload.deref(), &conn, data.root_domain.clone()) {
             debug!("Insert Successful");
             return "Inserted Successfully".to_string();
@@ -88,6 +92,7 @@ pub mod dom_types {
     fn get_conn(pool: &web::Data<DbPool>) -> PooledConnection<ConnectionManager<PgConnection>> {
         let conn = pool.get().map_err(|e| {
             warn!("Error Getting A Database Connection: {:?}", e);
+            println!("[-] Error Getting A Database Connection: {:?}", e);
         }).unwrap();
         conn
     }

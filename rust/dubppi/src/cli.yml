@@ -56,6 +56,22 @@ subcommands:
             long: db-connection
             help: Database Connection Info
             takes_value: true
+        - doamass:
+            long: do-amass
+            help: Enumerate Subdomains With Amass
+            takes_value: false
+        - amassasn:
+            long: asn
+            help: Asn Numbers To Use For Amass
+            takes_value: true
+        - amasscidr:
+            long: cidr
+            help: Ip Ranges To Use For Amass Discovery
+            takes_value: true
+        - amassconfig:
+            long: amass-config
+            help: Config File For Amass
+            takes_value: true
         - rootdomain:
             short: r
             long: root-domain
@@ -65,4 +81,12 @@ subcommands:
             short: a
             long: async-connections
             help: The Number Of Async Connections To Make At Once
+            takes_value: true
+  - pack:
+      about: Backup
+      args:
+        - dbcreds:
+            short: d
+            long: db-connection
+            help: Database Connection Info
             takes_value: true

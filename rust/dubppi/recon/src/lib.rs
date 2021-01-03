@@ -23,6 +23,7 @@ use diesel::prelude::*;
 use futures::StreamExt;
 use serde_json;
 use crate::commoncrawl::{CommonCrawlUrls, CommonCrawlConfig};
+use std::process::exit;
 
 pub fn main() {
     dotenv().ok();
@@ -40,20 +41,42 @@ pub async fn start_workers(app_config: AppConfig) {
     let manager =
         r2d2::ConnectionManager::<PgConnection>::new(&app_config.dbcreds);
     let pool = Arc::new(Mutex::new(r2d2::Pool::new(manager).unwrap()));
+    organizer::migrate(&pool.lock().unwrap().get().unwrap());
+    consumer::migrate(&pool.lock().unwrap().get().unwrap());
     let wayback_config = WaybackConfig::from(app_config.clone());
     let commoncrawl_config = CommonCrawlConfig::from(app_config.clone());
+    if app_config.do_amass {
+        if app_config.root_domain.is_none() {
+            warn!("A Root Domain Is Required For Amass Scanning Specify One With The -r Flag");
+            println!("[-] A Root Domain Is Required For Amass Scanning Specify One With The -r Flag");
+            debug!("Exiting...");
+            exit(-1);
+        }
+        println!("[+] Starting Amass This Could Take A While");
+        let amass_worker = amass::populate_subs(
+            app_config.root_domain.unwrap_or("".to_string()),
+            app_config.amass_asn.clone(),
+            app_config.amass_cidr.clone(),
+            app_config.amass_config.clone(),
+            &pool.lock().unwrap().get().unwrap()
+        ).await;
+    }
     let work = tokio::spawn(async move {
-        let amass_worker = amass::populate_subs(app_config.root_domain.unwrap_or("".to_string()), None, None).await;
         let wayback_worker =
             WayBackUrls::new(Arc::clone(&pool).lock().unwrap().clone(), wayback_config);
-        //let wayback = tokio::spawn(async move {let result = wayback_worker.start().await;});
+        println!("[+] Starting Wayback Work");
+        let wayback = tokio::spawn(async move {let result = wayback_worker.start().await;});
         let commoncrawl_worker = CommonCrawlUrls::new(Arc::clone(&pool).lock().unwrap().clone(), commoncrawl_config);
+        println!("[+] Starting Commoncrawl Work");
         let commoncrawl = tokio::spawn(async move {let result = commoncrawl_worker.start().await;});
-        //wayback.await;
+        println!("[+] Waiting For Wayback Work To Finish");
+        wayback.await;
+        println!("[+] Waiting For Commoncrawl Work To Finish");
         commoncrawl.await;
     });
 
     work.await;
+    println!("[+] Finished All Work. May The Web Force Be With You")
 }
 
 
@@ -62,7 +85,11 @@ pub async fn start_workers(app_config: AppConfig) {
 pub struct AppConfig {
     pub dbcreds: String,
     pub root_domain: Option<String>,
-    pub async_conns: i32
+    pub async_conns: i32,
+    pub do_amass: bool,
+    pub amass_config: Option<String>,
+    pub amass_cidr: Option<String>,
+    pub amass_asn: Option<String>
 }
 
 

@@ -43,7 +43,10 @@ impl CommonCrawlUrls {
                     .collect::<Vec<String>>();
 
                 debug!("Querying CommonCrawl For: {:?}", &subs);
-
+                println!("[+] Querying Commoncrawl Archives For: {:?}", &subs);
+                if subs.len() > 100 {
+                    println!("[+] This Will Take Some Time...");
+                }
                 let commoncrawl_data =
                     stream::iter(subs)
                         .map(|sub| {
@@ -52,6 +55,7 @@ impl CommonCrawlUrls {
 
                                 let mut responses = Vec::new();
                                 for index in indexi {
+                                    println!("[+] Checking {} Archives In Commoncrawl For {}", &index, &sub);
                                     let req = get(&format!("http://index.commoncrawl.org/CC-MAIN-{}-index?url=*.{}/*|{}/*|*{}*|{}&output=json&collapse=urlkey", index, sub, sub, sub, sub)).await;
                                     match req {
                                         Ok(response) => { responses.push(response.bytes().await); }

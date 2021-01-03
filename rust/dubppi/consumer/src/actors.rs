@@ -9,6 +9,7 @@ use diesel::*;
 pub mod db_actors {
     use super::*;
     use futures::TryStreamExt;
+    use crate::helpers::parsers::base_64_me;
 
     pub fn insert_dom_xss_sources(
         data: &DomXssSources,
@@ -30,7 +31,7 @@ pub mod db_actors {
                 path_href: None,
                 full_path: None,
                 path_only: None,
-                endpoint_id: "".to_string()
+                endpoint_id: base_64_me("/dom/dom_xss_sources")
             };
             insert_into(dump_collector)
                 .values(&insertable_data)
@@ -66,7 +67,7 @@ pub mod db_actors {
                 path_href: None,
                 full_path: Option::from(sink.sink.clone()),
                 path_only: None,
-                endpoint_id: "".to_string()
+                endpoint_id: base_64_me("/dom/dom_xss_sinks")
             };
             insert_into(dump_collector)
                 .values(&insertable_data)
@@ -107,7 +108,7 @@ pub mod db_actors {
                     path_href: None,
                     full_path: None,
                     path_only: Option::from(own_links.path_only.clone()),
-                    endpoint_id: my_endpoint_id.clone()
+                    endpoint_id: base_64_me("/dom/own_links")
                 };
                 insert_into(dump_collector)
                     .values(&insertable_data)
@@ -151,7 +152,7 @@ pub mod db_actors {
                     path_href: Option::from(single.full_path),
                     full_path: None,
                     path_only: Option::from(single.path_only),
-                    endpoint_id: my_endpoint_id.clone()
+                    endpoint_id: base_64_me("/dom/much_data")
                 };
 
                 insert_into(dump_collector)

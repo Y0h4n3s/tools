@@ -17,7 +17,7 @@ use std::fs::File;
 use std::io::Read;
 use std::net::SocketAddr;
 
-use clap::App;
+use clap::{App, ArgMatches};
 use dotenv::dotenv;
 use env_logger::{Builder, Target};
 
@@ -66,18 +66,16 @@ struct Config {
                 .unwrap();
 
 
-            let dbcreds = consume_matches.value_of("dbcreds")
-                .map(|s| s.to_owned())
-                .or(dotenv::var("DATABASE_URL").ok())
-                .and_then(|dbcreds| dbcreds.parse().ok())
-                .or_else(||Some("".to_string())).unwrap();
+            let dbcreds = get_db_creds(consume_matches);
 
             let mut rootdomain = None;
             if consume_matches.value_of("rootdomain").is_some() {
                 rootdomain = Option::from(consume_matches.value_of("rootdomain").unwrap().to_string());
                 debug!("Root Domain Selected: {}", &rootdomain.clone().unwrap());
+                println!("[+] Root Domain Selected: {}", &rootdomain.clone().unwrap());
             }
             debug!("Database Url: {}", dbcreds);
+            println!("[+] Database Url: {}", dbcreds);
             let app_config = AppState {
                 address: addr.to_string(),
                 dbcreds: dbcreds.clone(),
@@ -89,13 +87,10 @@ struct Config {
         },
         ("organize", organize_commands) => {
             let organize_commands = organize_commands.unwrap();
-            let dbcreds = organize_commands.value_of("dbcreds")
-                .map(|s| s.to_owned())
-                .or(dotenv::var("DATABASE_URL").ok())
-                .and_then(|dbcreds| dbcreds.parse().ok())
-                .or_else(||Some("".to_string())).unwrap();
+            let dbcreds = get_db_creds(organize_commands);
 
             debug!("Database Url: {}", dbcreds);
+            println!("[+] Database Url: {}", dbcreds);
 
             let app_config = organizer::AppState {
                 db_creds: dbcreds,
@@ -109,38 +104,68 @@ struct Config {
 
         ("recon", recon_commands) => {
             let recon_commands = recon_commands.unwrap();
-            debug!("Starting Recon Daemon");
-            let dbcreds = recon_commands.value_of("dbcreds")
-                .map(|s| s.to_owned())
-                .or(dotenv::var("DATABASE_URL").ok())
-                .and_then(|dbcreds| dbcreds.parse().ok())
-                .or_else(||Some("".to_string())).unwrap();
+            debug!("Starting Recon Work");
+            println!("[+] Starting Recon Work Go Have Some Coffee And Come Back");
+            let dbcreds = get_db_creds(recon_commands);
 
             let mut rootdomain = None;
             if recon_commands.value_of("rootdomain").is_some() {
                 rootdomain = Option::from(recon_commands.value_of("rootdomain").unwrap().to_string());
                 debug!("Root Domain Selected: {}", &rootdomain.clone().unwrap());
+                println!("[+] Root Domain Selected: {}", &rootdomain.clone().unwrap());
             }
 
+            debug!("Database Url: {}", dbcreds);
+            println!("[+] Database Url: {}", dbcreds);
             let asynccount = match recon_commands.value_of("asyncconns") {
                 Some(val) => val.to_string().parse::<i32>().unwrap_or(5),
                 None => 5
             };
+
             let app_config = recon::AppConfig {
                 dbcreds: dbcreds,
                 root_domain: rootdomain,
-                async_conns: asynccount
+                async_conns: asynccount,
+                do_amass: recon_commands.is_present("doamass"),
+                amass_config: match recon_commands.is_present("doamass") {
+                    true => Option::from(recon_commands.value_of("amassconfig").unwrap_or("").to_string()),
+                    false => None
+                },
+                amass_cidr: match recon_commands.is_present("doamass") {
+                    true => Option::from(recon_commands.value_of("amasscidr").unwrap_or("").to_string()),
+                    false => None
+                },
+                amass_asn: match recon_commands.is_present("doamass") {
+                    true => Option::from(recon_commands.value_of("amassasn").unwrap_or("").to_string()),
+                    false => None
+                },
             };
             recon::start_workers(app_config).await;
+        },
+        ("pack", pack_commands) => {
+            let pack_commands = pack_commands.unwrap();
+
+            let dbcreds = get_db_creds(pack_commands);
+            organizer::pack(dbcreds);
+
         }
 
         _ => {
-            info!("Choose One Subcommand To Continue {}", matches.usage());
+            println!("Choose One Subcommand To Continue {}", matches.usage());
+            println!("{}", matches.usage());
         },
-        _ => unimplemented!()
+        _ => panic!("No Usage Here")
     }
 
 
+}
+
+fn get_db_creds(args: &ArgMatches) -> String {
+   args.value_of("dbcreds")
+        .map(|s| s.to_owned())
+        .or(dotenv::var("DATABASE_URL").ok())
+        .and_then(|dbcreds| dbcreds.parse().ok())
+        .or_else(||Some("".to_string())).unwrap()
 }
 
 

@@ -47,10 +47,12 @@ impl WayBackUrls {
                     .collect::<Vec<String>>();
 
                 debug!("Scanning The Wayback Machine For: {:?}", &subs);
+                println!("[+] Scanning The Wayback Machine For: {:?}", &subs);
 
                 let wayback_data =
                     stream::iter(subs)
                         .map(|sub| {
+                            println!("[+] Scanninng Wayback For {}", &sub);
                             async move {
                                 let req = get(&format!("http://web.archive.org/cdx/search/cdx?url=*.{}/*|{}/*|*{}*|{}&output=json&collapse=urlkey", sub, sub, sub, sub)).await;
                                 match req {
