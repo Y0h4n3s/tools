@@ -266,7 +266,8 @@ public class BurpExtender implements IBurpExtender, IHttpListener {
         public void process(IHttpRequestResponse messageInfo) {
             String responseBody = generateResponse(messageInfo).toString();
             callbacks.printOutput(responseBody);
-            if (responseBody== null || responseBody.length() < 3) {
+            if (responseBody== null || !responseBody.contains("data")) {
+                callbacks.printOutput("not sending that");
                 return;
             }
             sendToServer(responseBody);
@@ -283,8 +284,9 @@ public class BurpExtender implements IBurpExtender, IHttpListener {
                 byte[] request = helpers.buildHttpMessage(headers, helpers.stringToBytes(responsBody));
                 IHttpService requestService = helpers.buildHttpService("localhost", 8889, false);
                 callbacks.printOutput("making request");
-                callbacks.printOutput(helpers.bytesToString(request));
+                //callbacks.printOutput(helpers.bytesToString(request));
                 byte[] resp = callbacks.makeHttpRequest(requestService, request).getResponse();
+                callbacks.printOutput(helpers.bytesToString(resp));
 
         }
 

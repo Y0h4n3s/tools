@@ -17,8 +17,8 @@ port = location.href.match(/.?(?:http?|wss|ssh|ftp|file)*:\/\/([a-z0-9\-._~%!$&'
 port = port != null ? port[3] : (window.location.protocol == "http" ? 80 : 443);
 links = [...document.querySelectorAll("a[href]")].map(n => n.href);
 links.forEach(link => {
-    result = link.match(/.?[a-z][a-z0-9+\-.]*:\/\/([a-z0-9\-._~%!$&'()*+,;=]+@)?([a-z0-9\-._~%]+|\[[a-z0-9\-._~%!$&'()*+,;=:]+\])/)
-if (result[2] == domain) {
+    result = link.match(/.?[a-z][a-z0-9+\-.]*:\/\/([a-z0-9\-._~%!$&'()*+,;=]+@)?([a-z0-9\-._~%]+|\[[a-z0-9\-._~%!$&'()*+,;=:]+\])/);
+if (result && !void 0 == result[2] && result[2] == domain) {
     path_only = link.match(/.?([a-z][a-z0-9+\-.]*:(\/\/[^/?#]+)?)?(\/?[a-z0-9\-._~%!$&'()*+,;=@]+(\/[a-z0-9\-._~%!$&'()*+,;=:@]+)*\/?|\/)([#?]|$)/)[3] || "";   
     param = link.match(/^[^?#]+\?([^#]+)/)? link.match(/^[^?#]+\?([^#]+)/)[1] : "";
 
@@ -35,8 +35,8 @@ temp.push({port: port, protocol: document.location.protocol, hostname: document.
 links = [...document.querySelectorAll("script[src]")].map(n => n.src);
 links.forEach(link => {
 if (link != null ) {
-    result = link.match(/.?[a-z][a-z0-9+\-.]*:\/\/([a-z0-9\-._~%!$&'()*+,;=]+@)?([a-z0-9\-._~%]+|\[[a-z0-9\-._~%!$&'()*+,;=:]+\])/)
-if (result[2] == domain) {
+    result = link.match(/.?[a-z][a-z0-9+\-.]*:\/\/([a-z0-9\-._~%!$&'()*+,;=]+@)?([a-z0-9\-._~%]+|\[[a-z0-9\-._~%!$&'()*+,;=:]+\])/);
+if (result && !void 0 == result[2] && result[2] == domain) {
     path_only = link.match(/.?([a-z][a-z0-9+\-.]*:(\/\/[^/?#]+)?)?(\/?[a-z0-9\-._~%!$&'()*+,;=@]+(\/[a-z0-9\-._~%!$&'()*+,;=:@]+)*\/?|\/)([#?]|$)/)? link.match(/.?([a-z][a-z0-9+\-.]*:(\/\/[^/?#]+)?)?(\/?[a-z0-9\-._~%!$&'()*+,;=@]+(\/[a-z0-9\-._~%!$&'()*+,;=:@]+)*\/?|\/)([#?]|$)/)[3] : "";
     param = link.match(/^[^?#]+\?([^#]+)/)? link.match(/^[^?#]+\?([^#]+)/)[1] : "";
 
@@ -54,7 +54,6 @@ data[m].params == temp[p].params) {exists = true;break}
     }
 if (!exists) {data.push(temp[p]);}exists = false;}
 data
-
 //  ==================================================Too Much Data ========================================================
 data = [];
 temp = [];

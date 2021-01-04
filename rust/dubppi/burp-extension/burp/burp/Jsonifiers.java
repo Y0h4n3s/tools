@@ -47,6 +47,7 @@ class Jsonifiers {
             much_data.put("page_from", link_from);
             data.put(much_data);
         }
+
         if (data.isEmpty()) return new JSONObject("{}");
         json.put("data", data);
         return json;

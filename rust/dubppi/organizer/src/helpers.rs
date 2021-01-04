@@ -84,7 +84,7 @@ pub fn insert_much_data_subdomains(dump: &DumpCollector, conn: &PgConnection) ->
             use super::*;
             let exists: Option<String> = sub_domains
                 .filter(hostname.eq(dump.hostname.as_ref().unwrap_or((&"".to_string()))))
-                .filter(protocol.eq(dump.protocol.as_ref().unwrap_or((&"".to_string()))))
+                .filter(protocol.eq(dump.protocol.as_ref().unwrap_or((&"https".to_string()))))
                 .filter(port.eq(dump.port.as_ref().unwrap_or(&443)))
                 .select(hostname)
                 .get_result::<Option<String>>(conn)
