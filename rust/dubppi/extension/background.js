@@ -54,8 +54,8 @@ chrome.tabs.onUpdated.addListener((tabid, change, tab) => {
         result.registeredTabs.forEach(async element => {
           if (element.isLiveExecution && element.isLiveActive && element.tabId == tabid) {
             chrome.storage.local.get(['configs'], async result => {
-              if (result.server) {
-                await execute(tabid, element.executableCode, result.server, element.endpointPath, 0)
+              if (result.configs.server) {
+                await execute(tabid, element.executableCode, result.configs.server, element.endpointPath, 0)
               }
             })
           }

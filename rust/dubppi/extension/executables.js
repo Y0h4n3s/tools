@@ -119,3 +119,12 @@ data[m].params == temp[p].params) {exists = true;break}
     }
 if (!exists) {data.push(temp[p]);}exists = false}
 data
+
+// ================================================================== Subdomainfinder subs ================================================
+data = ""
+document.querySelectorAll("td>.link[href]").forEach(e => {
+if (e.href.search("subdomainfinder") == -1) {
+    data += e.href + "\n"
+}
+}
+)

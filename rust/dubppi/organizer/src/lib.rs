@@ -54,9 +54,11 @@ pub fn organize(app_config: AppState) {
 
     organize_dom_xss(&conn.get_connection(), last_stop);
 
+    println!("[+] Finished Organizing Dom Xss Dump");
     organize_much_data(&conn, last_stop);
+    println!("[+] Finished Organizing Much Data Dump");
     organize_own_links(&conn, last_stop);
-
+    println!("[+] Finished Organizing Own Links Dump");
     update_last_processed(&conn.get_connection());
 
 }

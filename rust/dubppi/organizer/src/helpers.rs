@@ -439,10 +439,12 @@ pub fn organize_dom_xss(connection: &PgConnection, start_index: i32) {
 pub fn update_last_processed(connection: &PgConnection) {
     use crate::schema::dump_collector::dsl::*;
     let all = dump_collector
+        .order_by(id)
         .select(id)
         .get_results::<i32>(connection)
         .map_err(|e| {
-        debug!("Couldn't Save Current State ")
+        debug!("Couldn't Save Current State ");
+        println!("[+] Couldn't Save Current State: {:?}", e)
     }).unwrap();
     let last_index = Option::from(all.get(all.len() - 1).unwrap().to_string());
     {
@@ -455,19 +457,21 @@ pub fn update_last_processed(connection: &PgConnection) {
         match last {
             Some(val) => {
                 update(configs.filter(key.eq("last_processed_dump_id")))
-                    .set(value.eq(last_index))
+                    .set(value.eq(last_index.clone()))
                     .execute(connection)
                     .map_err(|e| {
-                        debug!("Couldn't Save Current State ")
+                        println!("Couldn't Save Current State: {:?}", e)
                     })
                     .unwrap();
+                println!("[+] Updated Last Processed Dump Id To: {}", last_index.clone().unwrap())
             }
             None => {
                 insert_into(configs)
                     .values(ConfigsInsert {
                         key: "last_processed_dump_id".to_string(),
-                        value: last_index
-                    });
+                        value: last_index.clone()
+                    }).execute(connection);
+                println!("[+] Added Last Processed Dump Id: {}", last_index.clone().unwrap())
             }
         }
 
