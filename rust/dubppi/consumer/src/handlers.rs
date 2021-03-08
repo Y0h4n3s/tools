@@ -6,7 +6,7 @@ use actix_web::{get, post, web, App, HttpResponse, HttpServer, Responder};
 use crate::models::request_models::*;
 use crate::actors::db_actors::*;
 use diesel::r2d2::{ConnectionManager, PooledConnection};
-
+use chrono::prelude::*;
 type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
 
 
@@ -27,7 +27,8 @@ pub mod dom_types {
     ) -> String {
         let conn = get_conn(&pool);
         debug!("Payload: {:?}", payload.deref());
-        println!("[+] Recieving Data At `/dom/dom_xss_sinks`");
+        let now= chrono::offset::Local::now();
+        println!("[+] {:?} Recieving Data At `/dom/dom_xss_sinks`", now);
         if insert_dom_xss_sinks(payload.deref(), &conn,) {
             debug!("Insert Successful");
             return "Inserted Successfully".to_string();
@@ -41,7 +42,8 @@ pub mod dom_types {
         payload: web::Json<DomXssSources>
     ) -> String {
         let conn = get_conn(&pool);
-        println!("[+] Recieving Data At `/dom/dom_xss_sources`");
+        let now= chrono::offset::Local::now();
+        println!("[+] {:?} Recieving Data At `/dom/dom_xss_sources`", now);
         if insert_dom_xss_sources(payload.deref(), &conn,) {
             debug!("Insert Successful");
             return "Inserted Successfully".to_string();
@@ -55,7 +57,8 @@ pub mod dom_types {
         payload: web::Json<DomOwnLinks>)
         -> String {
         let conn = get_conn(&pool);
-        println!("[+] Recieving Data At `/dom/own_links`");
+        let now= chrono::offset::Local::now();
+        println!("[+] {:?} Recieving Data At `/dom/own_links`", now);
         if insert_hostname_own_links(payload.deref(), &conn, data.root_domain.clone()) {
             debug!("Insert Successful");
             return "Inserted Successfully".to_string();
@@ -69,7 +72,8 @@ pub mod dom_types {
         payload: web::Json<DomMuchData>)
         -> String {
         let conn= get_conn(&pool);
-        println!("[+] Recieving Data At `/dom/much_data`");
+        let now = chrono::offset::Local::now();
+        println!("[+] {:?} Recieving Data At `/dom/much_data`", now);
         if insert_dom_much_data(payload.deref(), &conn, data.root_domain.clone()) {
             debug!("Insert Successful");
             return "Inserted Successfully".to_string();

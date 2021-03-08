@@ -6,7 +6,6 @@ use base64::*;
 use diesel::r2d2::{PooledConnection, ConnectionManager, Pool};
 use diesel::r2d2;
 use std::process::exit;
-
 pub mod parsers {
     use super::*;
 
@@ -463,7 +462,7 @@ pub fn update_last_processed(connection: &PgConnection) {
                         println!("Couldn't Save Current State: {:?}", e)
                     })
                     .unwrap();
-                println!("[+] Updated Last Processed Dump Id To: {}", last_index.clone().unwrap())
+                println!("[+] Updated Last Processed Dump Id To: {}", last_index.clone().unwrap());
             }
             None => {
                 insert_into(configs)
@@ -472,6 +471,7 @@ pub fn update_last_processed(connection: &PgConnection) {
                         value: last_index.clone()
                     }).execute(connection);
                 println!("[+] Added Last Processed Dump Id: {}", last_index.clone().unwrap())
+
             }
         }
 

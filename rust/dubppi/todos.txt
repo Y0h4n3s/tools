@@ -1,0 +1,8 @@
+: Add Timestamp For Consumer Inserts
+: Make key unique in the configs table
+: Add an option to load subdomains from a file or from stdin
+: Add an option to save to specified file instead of ./backup.sql for packer
+: Change the names of executables in the chrome extension so it displays what i gave it
+: Stop All is not working, chrome extension
+: Chrome extension sends repeated unnessesary requests while on live mode
+: Add the source of info for endpoint entries
