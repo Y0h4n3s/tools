@@ -6,3 +6,7 @@
 : Stop All is not working, chrome extension
 : Chrome extension sends repeated unnessesary requests while on live mode
 : Add the source of info for endpoint entries
+: Add functionality to query data easily(maybe graphql)
+: Record where data is coming from burp or extension or amass or wayback or ...
+: Actually implement dom xss mnanm neger missing a log beza mkniyat
+: Filter out garbage requests comming burp scanner or extentions not to be sent to server
